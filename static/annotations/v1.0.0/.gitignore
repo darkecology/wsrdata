@@ -1,6 +1,4 @@
 # Ignore everything in this directory
 *
 # Except this file
-!roosts-v0.1.0-official.json
-!roosts-v1.0.0-official.json
 !.gitignore
