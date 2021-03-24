@@ -70,10 +70,10 @@ OVERWRITE_DUALPOL       = False # whether to overwrite if npy arrays already exi
 
 # in most cases, no need to change the following
 DATASET_DIR                 = f"../datasets/roosts-{DATASET_VERSION}"
-ARRAY_CHANNELS              = [(attr, elev) for attr in ARRAY_ATTRIBUTES for elev in ARRAY_ELEVATIONS]
+ARRAY_CHANNELS              = [f"{attr}-{elev}" for attr in ARRAY_ATTRIBUTES for elev in ARRAY_ELEVATIONS]
 ARRAY_CHANNEL_INDICES       = {ARRAY_CHANNELS[i]: i for i in range(len(ARRAY_CHANNELS))}
 ARRAY_SHAPE                 = (ARRAY_DIM, ARRAY_DIM, len(ARRAY_CHANNELS))
-DUALPOL_CHANNELS            = [(attr, elev) for attr in DUALPOL_ATTRIBUTES for elev in DUALPOL_ELEVATIONS]
+DUALPOL_CHANNELS            = [f"{attr}-{elev}" for attr in DUALPOL_ATTRIBUTES for elev in DUALPOL_ELEVATIONS]
 DUALPOL_CHANNEL_INDICES     = {DUALPOL_CHANNELS[i]: i for i in range(len(DUALPOL_CHANNELS))}
 DUALPOL_SHAPE               = (DUALPOL_DIM, DUALPOL_DIM, len(DUALPOL_CHANNELS))
 SCAN_ROOT_DIR               = "../static/scans"
@@ -230,22 +230,22 @@ for split in SPLIT_PATHS:
 
         id += 1
 
-        # add annotations to dataset
-        if ANNOTATION_VERSION:
-            annotation_path = os.path.join(ANNORATION_DIR, scan + ".mat")
-            boxes = sio.loadmat(annotation_path, struct_as_record=False, squeeze_me=True)['label'].boxes
-            boxes = boxes - 1 # python and matlab use 0 and 1-based indexing respectively
-            if boxes.ndim == 1: boxes = boxes[np.newaxis, :]
-            for box in boxes:
-                dataset["anntations"][split].append({
-                    "id": int,
-                    "array_id": int,
-                    "category_id": int,
-                    "bbox": [x, y, width, height],
-                    "bbox_annotator": str,
-                    "bbox_scaling_factor": 1.0,
-                })
-                annotation_id += 1
+        # # add annotations to dataset
+        # if ANNOTATION_VERSION:
+        #     annotation_path = os.path.join(ANNORATION_DIR, scan + ".mat")
+        #     boxes = sio.loadmat(annotation_path, struct_as_record=False, squeeze_me=True)['label'].boxes
+        #     boxes = boxes - 1 # python and matlab use 0 and 1-based indexing respectively
+        #     if boxes.ndim == 1: boxes = boxes[np.newaxis, :]
+        #     for box in boxes:
+        #         dataset["anntations"][split].append({
+        #             "id": int,
+        #             "array_id": int,
+        #             "category_id": int,
+        #             "bbox": [x, y, width, height],
+        #             "bbox_annotator": str,
+        #             "bbox_scaling_factor": 1.0,
+        #         })
+        #         annotation_id += 1
 
 
 print("Saving the dataset definition to json...")
