@@ -195,7 +195,7 @@ def download_scans(keys, data_dir):
     #################
     for key in keys:
         # Download files
-        local_file = '%s/%s' % (data_dir, key)
+        local_file = os.path.join(data_dir, key)
         local_path, filename = os.path.split(local_file)
         mkdir_p(local_path)
 

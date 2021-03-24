@@ -12,7 +12,8 @@ import os
 import json
 import scipy.io as sio
 import wsrlib
-import wsrdata
+from wsrdata.download_radar_scans import download_by_scan_list
+from wsrdata.render_npy_arrays import render_by_scan_list
 
 ############### Step 1: define metadata ###############
 DESCRIPTION         = "A mini roost dataset with bbox annotations for testing whether the " \
@@ -35,12 +36,12 @@ SPLIT_PATHS         = {"train": os.path.join("../static/splits", SPLIT_VERSION, 
 
 ARRAY_VERSION       = "v0.1.0" # corresponding to arrays defined by the following lines
 ARRAY_DIM           = 600
-ARRAY_ATTRIBUTES    = ["reflectivity", "radial_velocity", "spectrum_width"]
+ARRAY_ATTRIBUTES    = ["reflectivity", "velocity", "spectrum_width"]
 ARRAY_ELEVATIONS    = [0.5, 1.5, 2.5, 3.5, 4.5]
 ARRAY_RENDER_CONFIG = {"fields":              ARRAY_ATTRIBUTES,
                        "coords":              "cartesian",
                        "r_min":               2125.0,     # default: first range bin of WSR-88D
-                       "r_max":               459875.0,   # default: last range bin
+                       "r_max":               150000.0,   # 459875.0 default: last range bin
                        "r_res":               250,        # default: super-res gate spacing
                        "az_res":              0.5,        # default: super-res azimuth resolution
                        "dim":                 ARRAY_DIM,  # num pixels on a side in Cartesian rendering
@@ -48,6 +49,7 @@ ARRAY_RENDER_CONFIG = {"fields":              ARRAY_ATTRIBUTES,
                        "elevs":               ARRAY_ELEVATIONS,
                        "use_ground_range":    True,
                        "interp_method":       'nearest'}
+OVERWRITE_ARRAY     = False # whether to overwrite if npy arrays already exist
 
 DUALPOL_VERSION         = "v0.1.0" # optional, corresponding to arrays defined by the following lines
 DUALPOL_DIM             = 600
@@ -56,7 +58,7 @@ DUALPOL_ELEVATIONS      = [0.5, 1.5, 2.5, 3.5, 4.5]
 DUALPOL_RENDER_CONFIG   = {"fields":              DUALPOL_ATTRIBUTES,
                            "coords":              "cartesian",
                            "r_min":               2125.0,       # default: first range bin of WSR-88D
-                           "r_max":               459875.0,     # default: last range bin
+                           "r_max":               150000.0,     # 459875.0 default: last range bin
                            "r_res":               250,          # default: super-res gate spacing
                            "az_res":              0.5,          # default: super-res azimuth resolution
                            "dim":                 DUALPOL_DIM,  # num pixels on a side in Cartesian rendering
@@ -64,8 +66,10 @@ DUALPOL_RENDER_CONFIG   = {"fields":              DUALPOL_ATTRIBUTES,
                            "elevs":               DUALPOL_ELEVATIONS,
                            "use_ground_range":    True,
                            "interp_method":       "nearest"}
+OVERWRITE_DUALPOL       = False # whether to overwrite if npy arrays already exist
 
 # in most cases, no need to change the following
+DATASET_DIR                 = f"../datasets/roosts-{DATASET_VERSION}"
 ARRAY_CHANNELS              = [(attr, elev) for attr in ARRAY_ATTRIBUTES for elev in ARRAY_ELEVATIONS]
 ARRAY_CHANNEL_INDICES       = {ARRAY_CHANNELS[i]: i for i in range(len(ARRAY_CHANNELS))}
 ARRAY_SHAPE                 = (ARRAY_DIM, ARRAY_DIM, len(ARRAY_CHANNELS))
@@ -84,8 +88,9 @@ DUALPOL_DIR                 = os.path.join("../static/arrays_for_dualpol", DUALP
 
 ############### Step 2: check for conflicts, update logs, create directories ###############
 # make sure DATASET_VERSION is not empty and does not conflict with existing versions, create a directory for it
-assert DATASET_VERSION and not os.path.exists(f"../datasets/roosts-{DATASET_VERSION}")
-os.mkdir(f"../datasets/roosts-{DATASET_VERSION}")
+assert DATASET_VERSION
+if not os.path.exists(DATASET_DIR): os.mkdir(DATASET_DIR)
+assert len(os.listdir(DATASET_DIR)) == 0
 # make sure SPLIT_PATHS, SCAN_ROOT_DIR, etc exist
 for split in SPLIT_PATHS: assert os.path.exists(SPLIT_PATHS[split])
 if not os.path.exists(SCAN_ROOT_DIR): os.mkdir(SCAN_ROOT_DIR)
@@ -100,15 +105,20 @@ if ANNOTATION_VERSION: assert os.path.exists(ANNORATION_DIR)
 assert os.path.exists("../static/arrays")
 existing_versions = os.listdir("../static/arrays") # those currently in the directory
 previous_versions = {} # those previously recorded at some point
-if os.path.exists("../static/arrays/previous_versions.json", "r"):
-    with open("../static/arrays/previous_versions.json") as f:
+if os.path.exists("../static/arrays/previous_versions.json"):
+    with open("../static/arrays/previous_versions.json", "r") as f:
         previous_versions = json.load(f)
-# make sure keys in previous_version.json match with existing directories
-# otherwise previous_version.json is unreliable and manual cleaning is needed
-assert set(existing_versions) == set(previous_versions)
-# make sure there is no conflict or initiate ARRAY_VERSION as a new version
+# make sure existing versions are all recorded in previous_versions.json
+# if so, we use previous_versions.json as a reference to detect version conflicts
+# otherwise, manual cleaning is required
+for v in existing_versions:
+    if v != "previous_versions.json":
+        assert v in previous_versions
+# make sure there is no conflict
+# otherwise, either choose a new ARRAY_VERSION or clean the existing/previous version
 if ARRAY_VERSION in previous_versions:
     assert previous_versions[ARRAY_VERSION] == ARRAY_RENDER_CONFIG
+# initiate ARRAY_VERSION as a new version
 else:
     previous_versions[ARRAY_VERSION] = ARRAY_RENDER_CONFIG
     with open("../static/arrays/previous_versions.json", "w") as f:
@@ -123,17 +133,26 @@ if DUALPOL_VERSION:
     if os.path.exists("../static/arrays_for_dualpol/previous_versions.json"):
         with open("../static/arrays_for_dualpol/previous_versions.json", "r") as f:
             previous_versions = json.load(f)
-    # make sure keys in previous_version.json match with existing directories
-    # otherwise previous_version.json is unreliable and manual cleaning is needed
-    assert set(existing_versions) == set(previous_versions)
-    # make sure there is no conflict or record DUALPOL_VERSION as a new version
+    # make sure existing versions are all recorded in previous_versions.json
+    # if so, we use previous_versions.json as a reference to detect version conflicts
+    # otherwise, manual cleaning is required
+    for v in existing_versions:
+        if v != "previous_versions.json":
+            assert v in previous_versions
+    # make sure there is no conflict
+    # otherwise, either choose a new ARRAY_VERSION or clean the existing/previous version
     if DUALPOL_VERSION in previous_versions:
         assert previous_versions[DUALPOL_VERSION] == DUALPOL_RENDER_CONFIG
+    # initiate DUALPOL_VERSION as a new version
     else:
         previous_versions[DUALPOL_VERSION] = DUALPOL_RENDER_CONFIG
         with open("../static/arrays_for_dualpol/previous_versions.json", "w") as f:
             json.dump(previous_versions, f)
         os.mkdir(DUALPOL_DIR)
+else:
+    DUALPOL_CHANNEL_INDICES = {}
+    DUALPOL_SHAPE = ()
+    DUALPOL_RENDER_CONFIG = {}
 
 
 ############### Step 3: sketch the dataset definition ###############
@@ -169,7 +188,7 @@ dataset = {
 ############### Step 4: Download radar scans by splits ###############
 print("Downloading scans...")
 for split in SPLIT_PATHS:
-    wsrdata.download_radar_scans.download_by_scan_list(
+    download_by_scan_list(
         SPLIT_PATHS[split], SCAN_DIR,
         os.path.join(SCAN_LOG_DIR, f"{DATASET_VERSION}.log"),
         os.path.join(SCAN_LOG_NOT_S3_DIR, f"{DATASET_VERSION}.log"),
@@ -180,46 +199,53 @@ for split in SPLIT_PATHS:
 ############### Step 5: Render radar scans by splits ###############
 print("Rendering arrays...")
 for split in SPLIT_PATHS:
-    wsrdata.render_npy_arrays.render_by_scan_list(
-        SPLIT_PATHS[split], SCAN_DIR, ARRAY_DIR, DUALPOL_DIR,
+    render_by_scan_list(
+        SPLIT_PATHS[split], SCAN_DIR,
+        ARRAY_RENDER_CONFIG, ARRAY_ATTRIBUTES, ARRAY_DIR, OVERWRITE_ARRAY,
+        DUALPOL_RENDER_CONFIG, DUALPOL_ATTRIBUTES, DUALPOL_DIR, OVERWRITE_DUALPOL,
     )
-
 
 ############### Step 6: Populate the dataset definition and save to json ###############
 print("Populating the dataset definition...")
 for split in SPLIT_PATHS:
-    scan_list = [scan.strip() for scan in open(SPLIT_PATHS[split], "r").readlines()]
+    scans = [scan.strip() for scan in open(SPLIT_PATHS[split], "r").readlines()]
+    id = 0 # for arrays and dualpol arrays
+    annotation_id = 0
 
-    for scan in scan_list:
+    for scan in scans:
         # add array to dataset
-
         dataset["arrays"][split].append({
-            "id": int,
-            "path": str,
+            "id": id,
+            "path": os.path.join(ARRAY_DIR, scan+".npy"),
             "scan": scan,
         })
 
         # add dualpol array to dataset
+        if DUALPOL_VERSION:
+            dataset["arrays_for_dualpol"][split].append({
+                "id": id,
+                "path": os.path.join(DUALPOL_DIR, scan+"_dualpol.npy"),
+                "scan": scan,
+            })
 
-        dataset["arrays_for_dualpol"][split].append({
-            "id": int,
-            "path": str,
-            "scan": scan,
-        })
+        id += 1
 
         # add annotations to dataset
-        boxes = sio.loadmat(scan + ".mat", struct_as_record=False, squeeze_me=True)['label'].boxes
-        boxes = boxes - 1 # python and matlab use 0 and 1-based indexing respectively
-        if boxes.ndim == 1: boxes = boxes[np.newaxis, :]
-        for box in boxes:
-            dataset["anntations"][split].append({
-                "id": int,
-                "array_id": int,
-                "category_id": int,
-                "bbox": [x, y, width, height],
-                "bbox_annotator": str,
-                "bbox_scaling_factor": 1.0,
-            })
+        if ANNOTATION_VERSION:
+            annotation_path = os.path.join(ANNORATION_DIR, scan + ".mat")
+            boxes = sio.loadmat(annotation_path, struct_as_record=False, squeeze_me=True)['label'].boxes
+            boxes = boxes - 1 # python and matlab use 0 and 1-based indexing respectively
+            if boxes.ndim == 1: boxes = boxes[np.newaxis, :]
+            for box in boxes:
+                dataset["anntations"][split].append({
+                    "id": int,
+                    "array_id": int,
+                    "category_id": int,
+                    "bbox": [x, y, width, height],
+                    "bbox_annotator": str,
+                    "bbox_scaling_factor": 1.0,
+                })
+                annotation_id += 1
 
 
 print("Saving the dataset definition to json...")

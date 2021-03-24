@@ -6,7 +6,6 @@ from setuptools import find_packages, setup
 install_requires = [
     "arm_pyart",
     "boto3",
-    "jupyter",
     "torch",
     "wsrlib",
 ]

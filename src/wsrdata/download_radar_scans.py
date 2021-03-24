@@ -12,35 +12,34 @@ def download_by_scan_list(filepath, out_dir, log_path,
                           error_scans_log_path):
 
     logger = logging.getLogger(__name__)
-    filelog = logging.FileHandler(log_path)
-    formatter = logging.Formatter('%(asctime)s [ %(fname)s ] : %(message)s')
-    formatter.converter = time.gmtime
-    filelog.setFormatter(formatter)
-    logger.setLevel(logging.DEBUG)
-    logger.addHandler(filelog)
+    if not logger.handlers:
+        filelog = logging.FileHandler(log_path)
+        formatter = logging.Formatter('%(asctime)s [ %(fname)s ] : %(message)s')
+        formatter.converter = time.gmtime
+        filelog.setFormatter(formatter)
+        logger.setLevel(logging.DEBUG)
+        logger.addHandler(filelog)
     logger = logging.LoggerAdapter(logger, {"fname": filepath})
 
     logger.info('***** Start downloading for %s *****' % (filepath))
 
     # Load all scans
-    with open(filepath, 'r') as f:
-        scans = f.readlines()
-
-    not_s3 = []
-    error_scans = []
+    scans = [scan.strip() for scan in open(filepath, "r").readlines()] # Load all scans
+    not_s3 = [] # record scans not in s3
+    error_scans = [] # record scans whose downloading fails due to reasons other than not in s3
 
     # download each scan
     for scan in scans:
         try:
-            scan = '%s.gz' % (scan.strip())
+            scan = '%s.gz' % scan
             station = scan[0:4]
             year = scan[4:8]
             month = scan[8:10]
             date = scan[10:12]
             aws_key = '%s/%s/%s/%s/%s' % (year, month, date, station, scan)
             print(aws_key)
-            logger.info('Downloading scan %s, aws key %s' % (scan, aws_key))
             download_scans([aws_key], out_dir)
+            logger.info('Downloaded scan %s, aws key %s' % (scan, aws_key))
         except ClientError as err:
             error_code = int(err.response['Error']['Code'])
             if error_code == 404:
@@ -54,11 +53,11 @@ def download_by_scan_list(filepath, out_dir, log_path,
             error_scans.append(scan)
 
     if len(not_s3) > 0:
-        with open(not_s3_log_path, 'w') as f:
-            f.write('\n'.join(not_s3))
+        with open(not_s3_log_path, 'a+') as f:
+            f.write('\n'.join(not_s3)+'\n')
 
     if len(error_scans) > 0:
-        with open(error_scans_log_path, 'w') as f:
-            f.write('\n'.join(error_scans))
+        with open(error_scans_log_path, 'a+') as f:
+            f.write('\n'.join(error_scans)+'\n')
 
     logger.info('***** Finished downloading for file %s *****' % (filepath))

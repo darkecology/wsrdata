@@ -5,10 +5,10 @@ machine learning models for detecting and tracking communal bird roosts.
 
 ### Under Construction
 - What licenses to use?
-- How to set rendering parameters?
 - Which user model (i.e. scaling factors) to use for bbox annotations?
 - Dataset visualization from npy arrays and annotations
 - Conversion between json and csv
+- Edge case: omit array or dualpol array version
 
 ### Overview
 - **datasets** is a directory reserved for json files created by this repository 
@@ -52,7 +52,7 @@ We use 0-based indexing for all ids; empty lists, empty strings, and -1 to indic
     }
   
     render_config = {
-        "fields":            ["reflectivity", "radial_velocity", ...],
+        "fields":            ["reflectivity", "velocity", ...],
         "coords":            "polar"/"cartesian",
         "r_min":             2125.0,     # default: first range bin of WSR-88D
         "r_max":             459875.0,   # default: last range bin
@@ -95,19 +95,20 @@ We use 0-based indexing for all ids; empty lists, empty strings, and -1 to indic
     - **render_npy_arrays.py** renders npy arrays from radar scans
     - **visualize_data.py** generates images for a selected channel in npy arrays 
     with annotations extracted from json
-    - **utils** contains utility/help functions.
+    - **utils** contains utility/help functions
 
 - **static** contains static files that are inputs to the dataset preparation pipeline or 
 generated during the preparation (see the following Release section more info):
-    - **scans** is reserved for downloaded radar scans
     - **splits** is for different versions of data splits
+    - **scans** is reserved for downloaded radar scans
     - **annotations** is for different versions of annotations
-    - **user_models** is for different versions of bounding box scaling factors learned by EM
-    - **arrays** is for npy arrays rendered from scans according to splits
-    - **arrays_for_dualpol** is for dualpol npy arrays rendered from scans according to splits
-    
+    - **user_models** is for different versions of bounding box scaling factors learned by EM [1]
+    - **arrays** is for different versions of npy arrays rendered from scans according to splits
+    - **arrays_for_dualpol** is for different versions of dualpol npy arrays rendered from scans according to splits
+    - **visualization** is for different versions of visualization for the (reflectivity, 0.5) channel with annotations. 
+
 - **tools** contains scripts that are entry points of the data preparation pipeline,
- calls functions in **src/wsrdata**, and partially or entirely run the dataset preparation pipeline:
+ call functions in **src/wsrdata**, and partially or entirely run the dataset preparation pipeline:
     - **prepare_dataset_v0.1.0.py** is a modifiable template that, given metadata,
     download radar scans, render npy arrays, read annotations, and create json files which define datasets
     - **run_visualize_data.py** generates and saves visualization images from npy arrays and annotations from json files
@@ -116,10 +117,9 @@ generated during the preparation (see the following Release section more info):
 
 ### Release
 #### datasets
-- **roosts-v0.1.0-official** uses splits v0.1.0, annotations v1.0.0, arrays v0.1.0, arrays_for_dualpol v0.1.0.
+- **roosts-v0.1.0-official** uses splits v0.1.0, annotations v1.0.0, user_models v1.0.0, arrays v0.1.0, arrays_for_dualpol v0.1.0.
     - **roosts-v0.1.0-official.json** defines the dataset
-    - **visualization** contains images for the (reflectivity, 0.5) channel with annotations. 
-- **roosts-v1.0.0-official** uses splits v1.0.0, annotations v1.0.0, arrays v1.0.0, arrays_for_dualpol v1.0.0.
+- **roosts-v1.0.0-official** uses splits v1.0.0, annotations v1.0.0, user_models v1.0.0, arrays v1.0.0, arrays_for_dualpol v1.0.0.
 
 #### splits
 - **v0.1.0** involves 3 scans in train.txt and test.txt respectively and 
@@ -138,10 +138,11 @@ information logged [here](https://docs.google.com/spreadsheets/d/1lvEWNSSJsT9WYG
 
 #### user_models
 - **v1.0.0** can be downloaded [here](https://www.dropbox.com/sh/d3ronsvzr9c0xxq/AAD9fgrk2exRuyWcBjtU7Ea8a?dl=0),
-where the pkl files can be loaded by python 2 but not python 3.
+where the pkl files can be loaded by python 2 but not python 3. User models are bounding box scaling factors learned
+by EM. Consider outputs of Faster RCNN in [1] as ground truth. User factor = biased user annotation / ground truth.
 
 #### arrays
-- **v0.1.0**: 600x600x15 arrays where the channels are _[reflectivity, radial_velocity, spectrum_width] x 
+- **v0.1.0**: 600x600x15 arrays where the channels are _[reflectivity, velocity, spectrum_width] x 
 elevations [0.5, 1.5, 2.5, 3.5, 4.5]_.
 - **v1.0.0**: same attributes as v0.1.0.
 
@@ -195,7 +196,7 @@ Let's produce `roosts-v0.1.0.json` to check whether the installation is successf
 - This repository already includes split v0.1.0 in `static/splits`
 - Download annotation v1.0.0 [here](https://www.dropbox.com/s/eti469m1z4634x4/Annotations.zip?dl=0);
 place the .mat files directly under `static/annotations`
-- Enter the `tools` directory and run `python prepare_dataset_v0.1.0.py`
+- `cd` into the `tools` directory and run `python prepare_dataset_v0.1.0.py`
 - The generated `datasets/roosts-v0.1.0.json` should be the same as `datasets/roosts-v0.1.0-official.json` 
 which is provided for reference as part of this repository
 
@@ -212,7 +213,7 @@ There are two ways to visualize data.
         conda install -c anaconda ipykernel
         python -m ipykernel install --user --name=ENV
         ```
-    - To check which environments are in jupyter notebook and to delete one:
+    - To check which environments are in jupyter as kernels and to delete one:
         ```bash
         jupyter kernelspec list
         jupyter kernelspec uninstall ENV
