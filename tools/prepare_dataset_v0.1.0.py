@@ -30,6 +30,7 @@ USER_MODEL_VERSION  = "v1.0.0_hardEM200000"
 DATE_CREATED        = "2021/03/20"
 LICENSES            = []
 CATEGORIES          = ["roost"]
+OVERWRITE_DATASET   = True # overwrites the previous json file if the specified dataset version already exists
 
 SPLIT_PATHS         = {"train": os.path.join("../static/splits", SPLIT_VERSION, "train.txt"),
                        "test": os.path.join("../static/splits", SPLIT_VERSION, "test.txt")}
@@ -72,10 +73,10 @@ OVERWRITE_DUALPOL       = False # whether to overwrite if npy arrays already exi
 DATASET_DIR                 = f"../datasets/roosts-{DATASET_VERSION}"
 ARRAY_CHANNELS              = [f"{attr}-{elev}" for attr in ARRAY_ATTRIBUTES for elev in ARRAY_ELEVATIONS]
 ARRAY_CHANNEL_INDICES       = {ARRAY_CHANNELS[i]: i for i in range(len(ARRAY_CHANNELS))}
-ARRAY_SHAPE                 = (ARRAY_DIM, ARRAY_DIM, len(ARRAY_CHANNELS))
+ARRAY_SHAPE                 = (len(ARRAY_CHANNELS), ARRAY_DIM, ARRAY_DIM)
 DUALPOL_CHANNELS            = [f"{attr}-{elev}" for attr in DUALPOL_ATTRIBUTES for elev in DUALPOL_ELEVATIONS]
 DUALPOL_CHANNEL_INDICES     = {DUALPOL_CHANNELS[i]: i for i in range(len(DUALPOL_CHANNELS))}
-DUALPOL_SHAPE               = (DUALPOL_DIM, DUALPOL_DIM, len(DUALPOL_CHANNELS))
+DUALPOL_SHAPE               = (len(DUALPOL_CHANNELS), DUALPOL_DIM, DUALPOL_DIM)
 SCAN_ROOT_DIR               = "../static/scans"
 SCAN_DIR                    = os.path.join(SCAN_ROOT_DIR, "scans")
 SCAN_LOG_DIR                = os.path.join(SCAN_ROOT_DIR, "logs")
@@ -90,7 +91,7 @@ DUALPOL_DIR                 = os.path.join("../static/arrays_for_dualpol", DUALP
 # make sure DATASET_VERSION is not empty and does not conflict with existing versions, create a directory for it
 assert DATASET_VERSION
 if not os.path.exists(DATASET_DIR): os.mkdir(DATASET_DIR)
-assert len(os.listdir(DATASET_DIR)) == 0
+if not OVERWRITE_DATASET: assert len(os.listdir(DATASET_DIR)) == 0
 # make sure SPLIT_PATHS, SCAN_ROOT_DIR, etc exist
 for split in SPLIT_PATHS: assert os.path.exists(SPLIT_PATHS[split])
 if not os.path.exists(SCAN_ROOT_DIR): os.mkdir(SCAN_ROOT_DIR)
@@ -230,7 +231,7 @@ for split in SPLIT_PATHS:
 
         id += 1
 
-        # # add annotations to dataset
+        # add annotations to dataset
         # if ANNOTATION_VERSION:
         #     annotation_path = os.path.join(ANNORATION_DIR, scan + ".mat")
         #     boxes = sio.loadmat(annotation_path, struct_as_record=False, squeeze_me=True)['label'].boxes

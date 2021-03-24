@@ -13,7 +13,8 @@ machine learning models for detecting and tracking communal bird roosts.
 ### Overview
 - **datasets** is a directory reserved for json files created by this repository 
 to define datasets in the modified [COCO format](https://cocodataset.org/#format-data) demonstrated below.
-We use 0-based indexing for all ids; empty lists, empty strings, and -1 to indicate "not applicable".
+We use 0-based indexing for all ids; empty dictionaries, empty lists, empty tuples, empty strings, and -1 
+to indicate "not applicable".
     ```angular2
     {
         "info":               info,
@@ -36,18 +37,18 @@ We use 0-based indexing for all ids; empty lists, empty strings, and -1 to indic
         "user_model_version":       "v0.0.1_hardEM200000",
         "date_created":             "yyyy/mm/dd",
         "array_version":            "v0.0.1",
-        "array_channel_indices":    {("reflectivity", 0.5): 0,
-                                     ("reflectivity", 1.5): 1,
+        "array_channel_indices":    {"reflectivity-0.5": 0,
+                                     "reflectivity-1.5": 1,
                                      ...,
-                                     ("spectrum_width", 4.5): 14},
-        "array_shape":              (600, 600, 15),
+                                     "spectrum_width-4.5": 14},
+        "array_shape":              (15, 600, 600),
         "array_render_config":      render_config,
         "dualpol_version":          "v0.0.1",
-        "dualpol_channel_indices":  {("differential_reflectivity", 0.5): 0,
-                                     ("differential_reflectivity", 1.5): 1,
+        "dualpol_channel_indices":  {"differential_reflectivity-0.5": 0,
+                                     "differential_reflectivity-1.5": 1,
                                      ...,
-                                     ("differential_phase", 4.5): 14},
-        "dualpol_shape":            (600, 600, 15),
+                                     "differential_phase-4.5": 14},
+        "dualpol_shape":            (15, 600, 600),
         "dualpol_render_config":    render_config,
     }
   
