@@ -4,27 +4,21 @@ Given radar scans and specifications, this repository prepares datasets for trai
 machine learning models for detecting and tracking communal bird roosts. 
 
 ### Under Construction
-- What licenses to use?
-- Which user model (i.e. scaling factors) to use for bbox annotations?
+- Which user models (i.e. scaling factors) to use for bbox annotations?
 - Dataset visualization from npy arrays and annotations
+- If there is a newly established standard input format for annotations, related code including those in 
+step 6 of tools/prepare_dataset_v0.1.0.py will need to be updated
 - Conversion between json and csv
-- Edge case: omit array or dualpol array version
 
 ### Overview
 - **datasets** is a directory reserved for json files created by this repository 
 to define datasets in the modified [COCO format](https://cocodataset.org/#format-data) demonstrated below.
-We use 0-based indexing for all ids; empty dictionaries, empty lists, empty tuples, empty strings, and -1 
-to indicate "not applicable".
+We use 0-based indexing for all ids; None, empty lists, empty strings, etc to indicate "not applicable".
     ```angular2
     {
-        "info":               info,
-        "license":            [license],
-        "arrays":             {"train": [array], "val": [array], "test": [array]},
-        "arrays_for_dualpol": {"train": [array], "val": [array], "test": [array]},
-        "annotations":        {"train": [annotation],
-                               "val": [annotation],
-                               "test": [annotation]},
-        "categories":         ["roost", "rain", ...],
+        "info":                   info,
+        "license":                [license],
+        "scans":                  {"train": [scan], "val": [scan], "test": [scan]},
     }
   
     info = {
@@ -50,6 +44,9 @@ to indicate "not applicable".
                                      "differential_phase-4.5": 14},
         "dualpol_shape":            (15, 600, 600),
         "dualpol_render_config":    render_config,
+        "categories":               ["roost", "rain", ...],
+        "bbox_mode":                "XYWH",
+        "bbox_scaling_factors":     {..., "sheldon-KDOX": 0.6469252517936639, ...}
     }
   
     render_config = {
@@ -72,20 +69,30 @@ to indicate "not applicable".
         "url":    str,
     }
   
-    array = {
-        "id":                 int,
-        "path":               str,
-        "license_id":         int,
-        "scan":               str,
+    scan = {
+        "scan_id":                int,
+        "scan":                   str,    # scan name
+        "minutes_from_sunrise":   int,    # None for unknown, negative for before sunrise
+        "array_path":             str,
+        "array_license_id":       int,
+        "dualpol_path":           str,
+        "dualpol_license_id":     int,
+        "annotations":            [annotation],
     }
     
     annotation = {
-        "id":                     int,
-        "array_id":               int,
+        "annotation_id":          int,    # among all annotations of all scans
+        "sequence_id":            int,    # indices for roost tracks
         "category_id":            int,
-        "bbox":                   [x, y, width, height],
+        "x":                      float,  # circle center coordinate in map
+        "y":                      float,
+        "r":                      float,  # circle radius
+        "x_im":                   float,  # circle center coordinate in array
+        "y_im":                   float,
+        "r_im":                   float,  # circle radius normalized to array dim
+        "bbox":                   [x, y, width, height],  # calculated from x_im y_im r_im
         "bbox_annotator":         str,
-        "bbox_scaling_factor":    float,
+        "bbox_scaling_factor":    float,  # bbox_scaling_factors[bbox_annotator] or None
         "segmentation":           [polygon],
         "segmentation_annotator": str,
     }
@@ -134,13 +141,20 @@ Scans are randomly ordered in the txt files.
 - **v1.0.0** contains the same scans as v0.5.0, with scans ordered in the txt files.
 
 #### annotations
-- **v1.0.0** can be downloaded [here](https://www.dropbox.com/s/eti469m1z4634x4/Annotations.zip?dl=0) with annotator
-information logged [here](https://docs.google.com/spreadsheets/d/1lvEWNSSJsT9WYGgUE3rIkOoy9vU2zHEPTCiVJnRdFaI/edit).
+- Annotation information is collected from a few sources in various formats. It would be nice to establish
+a standard format in the future and standard code in Step 6 of `tools/prepare_dataset_*.py` to load annotations.
+- **v1.0.0** is reserved for annotation sources and includes processing scripts. This annotation version 
+is listed in the txt file [here](https://www.dropbox.com/s/0j9srf0jt6lc76e/user_annotations.txt?dl=0); 
+annotation information in the txt file were processed and paritially saved in *.mat files 
+[here](https://www.dropbox.com/s/eti469m1z4634x4/Annotations.zip?dl=0) and used by [1]; 
+annotator information was also logged 
+[here](https://docs.google.com/spreadsheets/d/1lvEWNSSJsT9WYGgUE3rIkOoy9vU2zHEPTCiVJnRdFaI/edit).
 
 #### user_models
-- **v1.0.0** can be downloaded [here](https://www.dropbox.com/sh/d3ronsvzr9c0xxq/AAD9fgrk2exRuyWcBjtU7Ea8a?dl=0),
+- **v1.0.0** can be found [here](https://www.dropbox.com/sh/d3ronsvzr9c0xxq/AAD9fgrk2exRuyWcBjtU7Ea8a?dl=0),
 where the pkl files can be loaded by python 2 but not python 3. User models are bounding box scaling factors learned
-by EM. Consider outputs of Faster RCNN in [1] as ground truth. User factor = biased user annotation / ground truth.
+by EM. Consider outputs of Faster RCNN in [1] as ground truth: User factor = biased user annotation / ground truth.
+User factors are currently manually imported to `tools/prepare_dataset_v0.1.0.py`.
 
 #### arrays
 - **v0.1.0**: 600x600x15 arrays where the channels are _[reflectivity, velocity, spectrum_width] x 
@@ -195,8 +209,8 @@ vim ~/.aws/config
 ### Dataset Preparation
 Let's produce `roosts-v0.1.0.json` to check whether the installation is successful.
 - This repository already includes split v0.1.0 in `static/splits`
-- Download annotation v1.0.0 [here](https://www.dropbox.com/s/eti469m1z4634x4/Annotations.zip?dl=0);
-place the .mat files directly under `static/annotations`
+- This repository already includes `static/annotations/v1.0.0/user_annotations.txt` whose source is
+[here](https://www.dropbox.com/s/0j9srf0jt6lc76e/user_annotations.txt?dl=0)
 - `cd` into the `tools` directory and run `python prepare_dataset_v0.1.0.py`
 - The generated `datasets/roosts-v0.1.0.json` should be the same as `datasets/roosts-v0.1.0-official.json` 
 which is provided for reference as part of this repository
