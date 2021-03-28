@@ -261,10 +261,12 @@ for split in SPLIT_PATHS:
 ############### Step 6: Populate the dataset definition and save to json ###############
 print("Populating the dataset definition...")
 for split in SPLIT_PATHS:
+    print(f"Starting the {split} split...")
     scans = [scan.strip() for scan in open(SPLIT_PATHS[split], "r").readlines()]
     scan_id = 0 # for arrays and dualpol arrays
 
     if ANNOTATION_VERSION:
+        print("Loading annotations....")
         annotation_id = 0
         # maybe define which annotations we want to include
         # with open(os.path.join(ANNOTATION_DIR, "annotation_list.json"), "r") as f:
@@ -278,7 +280,7 @@ for split in SPLIT_PATHS:
         # Preparation: load annotations into a dictionary where scan names are keys
         annotation_dict = {}
         minutes_from_sunrise_dict = {}
-        unknown_factors = []
+        unknown_factors = set()
         for annotation in annotations:
             annotation[11] = float(annotation[11])
             annotation[12] = float(annotation[12])
@@ -286,7 +288,7 @@ for split in SPLIT_PATHS:
             if annotation[14] in BBOX_SCALING_FACTORS:
                 factor = BBOX_SCALING_FACTORS[annotation[14]]
             else:
-                unknown_factors.append(annotation[14])
+                unknown_factors.add(annotation[14])
                 factor = None
             # if there is a definition of which annotations to include
             # if annotation[1][:-3] in annotation_set:
@@ -313,8 +315,12 @@ for split in SPLIT_PATHS:
                 annotation_dict[annotation[1][:-3]] = [new_annotation]
             minutes_from_sunrise_dict[annotation[1][:-3]] = int(annotation[10])
         print("Unknown user models / bbox scaling factors for", unknown_factors)
+        print("fine as long as the train/val/test split does not include these user-station pairs.")
 
-    for scan in scans:
+    for n, scan in enumerate(scans):
+        # if n % 5000 == 0:
+        #     print("Adding scan {n+1}/{len(scans)}")
+
         # add array to dataset
         dataset["scans"][split].append({
             "scan_id":              scan_id,
@@ -330,6 +336,11 @@ for split in SPLIT_PATHS:
         for annotation in dataset["scans"][split][-1]["annotations"]:
             annotation["annotation_id"] = annotation_id
             annotation_id += 1
+            annotation["scan_id"] = scan_id
+
+            if annotation["bbox_annotator"] in unknown_factors:
+                print(f"Problem: annotation {annotation_id} for scan {scan_id} involves unknown "
+                      f"annotator-station pair and scaling factor.")
 
         scan_id += 1
 

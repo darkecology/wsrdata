@@ -82,6 +82,7 @@ We use 0-based indexing for all ids; None, empty lists, empty strings, etc to in
     
     annotation = {
         "annotation_id":          int,    # among all annotations of all scans
+        "scan_id":                int,
         "sequence_id":            int,    # indices for roost tracks
         "category_id":            int,
         "x":                      float,  # circle center coordinate in map
