@@ -159,7 +159,7 @@ if ANNOTATION_VERSION: assert os.path.exists(ANNOTATION_DIR)
 
 # make sure ARRAY_VERSION is not empty and does not conflict with existing versions
 assert ARRAY_VERSION
-assert os.path.exists("../static/arrays")
+if not os.path.exists("../static/arrays"): os.mkdir("../static/arrays")
 existing_versions = os.listdir("../static/arrays") # those currently in the directory
 previous_versions = {} # those previously recorded at some point
 if os.path.exists("../static/arrays/previous_versions.json"):
@@ -184,7 +184,7 @@ else:
 
 # make sure DUALPOL_VERSION is not empty and does not conflict with existing versions
 assert DUALPOL_VERSION
-assert os.path.exists("../static/arrays_for_dualpol")
+if not os.path.exists("../static/arrays_for_dualpol"): os.mkdir("../static/arrays_for_dualpol")
 existing_versions = os.listdir("../static/arrays_for_dualpol")  # those currently in the directory
 previous_versions = {}  # those previously recorded at some point
 if os.path.exists("../static/arrays_for_dualpol/previous_versions.json"):
@@ -314,8 +314,8 @@ for split in SPLIT_PATHS:
             else:
                 annotation_dict[annotation[1][:-3]] = [new_annotation]
             minutes_from_sunrise_dict[annotation[1][:-3]] = int(annotation[10])
-        print("Unknown user models / bbox scaling factors for", unknown_factors)
-        print("fine as long as the train/val/test split does not include these user-station pairs.")
+        print(f"Unknown user models / bbox scaling factors for {unknown_factors} but "
+              f"fine as long as the train/val/test split does not include these user-station pairs.")
 
     for n, scan in enumerate(scans):
         # if n % 5000 == 0:
