@@ -126,9 +126,11 @@ generated during the preparation (see the following Release section more info):
 
 ### Release
 #### datasets
-- **roosts-v0.1.0-official** uses splits v0.1.0, annotations v1.0.0, user_models v1.0.0, arrays v0.1.0, arrays_for_dualpol v0.1.0.
+- **roosts-v0.1.0-official** uses splits v0.1.0, annotations v1.0.0, user_models v1.0.0_hardEM200000,
+ arrays v0.1.0, arrays_for_dualpol v0.1.0.
     - **roosts-v0.1.0-official.json** defines the dataset
-- **roosts-v1.0.0-official** uses splits v1.0.0, annotations v1.0.0, user_models v1.0.0, arrays v1.0.0, arrays_for_dualpol v1.0.0.
+- **roosts-v1.0.0-official** uses splits v1.0.0, annotations v1.0.0, user_models v1.0.0_hardEM200000,
+ arrays v1.0.0, arrays_for_dualpol v1.0.0.
 
 #### splits
 - **v0.1.0** involves 3 scans in train.txt and test.txt respectively and 
