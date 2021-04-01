@@ -9,8 +9,8 @@ import numpy as np
 # KOKX20130721_093320_V06
 # KTBW20031123_115217
 def render_by_scan_list(filepath, scan_dir,
-                        array_render_config, array_attributes, array_dir, overwrite_array,
-                        dualpol_render_config, dualpol_attributes, dualpol_dir, overwrite_dualpol):
+                        array_render_config, array_attributes, array_dir,
+                        dualpol_render_config, dualpol_attributes, dualpol_dir):
 
     log_path = os.path.join(array_dir, "rendering.log")
         # this includes successful rendering for arrays and dualpol arrays
@@ -35,6 +35,7 @@ def render_by_scan_list(filepath, scan_dir,
 
     # render arrays from scans
     for scan in scans:
+        # print("Rendering scan", scan)
         station = scan[0:4]
         year = scan[4:8]
         month = scan[8:10]
@@ -42,8 +43,7 @@ def render_by_scan_list(filepath, scan_dir,
         scan_file = os.path.join(scan_dir, '%s/%s/%s/%s/%s.gz' % (year, month, date, station, scan))
 
         if not os.path.exists(os.path.join(array_dir, scan+".npy")) or \
-                not os.path.exists(os.path.join(dualpol_dir, scan+"_dualpol.npy")) or \
-                overwrite_array or overwrite_dualpol:
+                not os.path.exists(os.path.join(dualpol_dir, scan+"_dualpol.npy")):
             try:
                 radar = pyart.io.read_nexrad_archive(scan_file)
                 logger.info('Loaded scan %s' % scan)
@@ -53,7 +53,7 @@ def render_by_scan_list(filepath, scan_dir,
                 dualpol_errors.append(scan)
                 continue
 
-        if os.path.exists(os.path.join(array_dir, scan + ".npy")) and not overwrite_array:
+        if os.path.exists(os.path.join(array_dir, scan + ".npy")):
             logger.info('A npy array already exists for scan %s' % scan)
         else:
             try:
@@ -66,7 +66,7 @@ def render_by_scan_list(filepath, scan_dir,
                 logger.error('Exception while rendering a npy array from scan %s - %s' % (scan, str(ex)))
                 array_errors.append(scan)
 
-        if os.path.exists(os.path.join(dualpol_dir, scan+"_dualpol.npy")) and not overwrite_dualpol:
+        if os.path.exists(os.path.join(dualpol_dir, scan+"_dualpol.npy")):
             logger.info('A dual npy array already exists for scan %s' % scan)
         else:
             try:

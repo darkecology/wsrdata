@@ -26,17 +26,15 @@ from wsrdata.download_radar_scans import download_by_scan_list
 from wsrdata.render_npy_arrays import render_by_scan_list
 
 ############### Step 1: define metadata ###############
-PRETTY_PRINT_INDENT = 4 # default None; if integer n, generated json will be human-readable with n indentations
+PRETTY_PRINT_INDENT = None # default None; if integer n, generated json will be human-readable with n indentations
 
-DESCRIPTION         = "A mini roost dataset with bbox annotations for testing whether the " \
-                      "data preparation pipeline is successfully set up. Three scans in the " \
-                      "train and test splits respectively."
+DESCRIPTION         = "The official wsrdata roost dataset v1.0.0 with bbox annotations."
 COMMENTS            = "(1) \"bbox\" is standardized to \"Dan Sheldon\" format using scaling factors " \
                       "learned by the EM algorithm proposed by Cheng et al. (2019), while " \
-                      "the factors used are recorded in the \"bbox_scaling_factor\" field."
+                      "the factors used are recorded in the \"bbox_scaling_factor\" field." #TODO
 URL                 = ""
-DATASET_VERSION     = "v0.1.0"
-SPLIT_VERSION       = "v0.1.0"
+DATASET_VERSION     = "v1.0.0"
+SPLIT_VERSION       = "v1.0.0"
 ANNOTATION_VERSION  = "v1.0.0" # optional -- an empty string indicates a dataset without annotations
 USER_MODEL_VERSION  = "v1.0.0_hardEM200000"
 DATE_CREATED        = "2021/03/20"
@@ -66,9 +64,10 @@ DEFAULT_CAT_ID      = 0 # by default, annotations are for CATEGORIES[0] which is
 OVERWRITE_DATASET   = True # overwrites the previous json file if the specified dataset version already exists
 
 SPLIT_PATHS         = {"train": os.path.join("../static/splits", SPLIT_VERSION, "train.txt"),
+                       "val": os.path.join("../static/splits", SPLIT_VERSION, "val.txt"),
                        "test": os.path.join("../static/splits", SPLIT_VERSION, "test.txt")}
 
-ARRAY_VERSION       = "v0.1.0" # corresponding to arrays defined by the following lines
+ARRAY_VERSION       = "v1.0.0" # corresponding to arrays defined by the following lines
 ARRAY_DIM           = 600
 ARRAY_ATTRIBUTES    = ["reflectivity", "velocity", "spectrum_width"]
 ARRAY_ELEVATIONS    = [0.5, 1.5, 2.5, 3.5, 4.5]
@@ -84,7 +83,7 @@ ARRAY_RENDER_CONFIG = {"fields":              ARRAY_ATTRIBUTES,
                        "use_ground_range":    True,
                        "interp_method":       'nearest'}
 
-DUALPOL_VERSION         = "v0.1.0" # corresponding to arrays defined by the following lines
+DUALPOL_VERSION         = "v1.0.0" # corresponding to arrays defined by the following lines
 DUALPOL_DIM             = 600
 DUALPOL_ATTRIBUTES      = ["differential_reflectivity", "cross_correlation_ratio", "differential_phase"]
 DUALPOL_ELEVATIONS      = [0.5, 1.5, 2.5, 3.5, 4.5]
