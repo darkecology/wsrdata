@@ -4,5 +4,12 @@
 !.gitignore
 !roosts-v0.1.0-official
 !roosts-v0.1.0-official/roosts-v0.1.0.json
+!roosts-v0.1.0-official/visualization
+!roosts-v0.1.0-official/visualization/KAMX20101024_111513_V03.png
+!roosts-v0.1.0-official/visualization/KAMX20101024_112106_V03.png
+!roosts-v0.1.0-official/visualization/KAMX20101024_112700_V03.png
+!roosts-v0.1.0-official/visualization/KOKX20130721_093320_V06.png
+!roosts-v0.1.0-official/visualization/KTBW20031123_115217.png
+!roosts-v0.1.0-official/visualization/KTBW20090209_120356_V03.png
 !roosts-v1.0.0-official
 !roosts-v1.0.0-official/roosts-v1.0.0.json
