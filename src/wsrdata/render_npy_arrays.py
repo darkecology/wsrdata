@@ -35,7 +35,6 @@ def render_by_scan_list(filepath, scan_dir,
 
     # render arrays from scans
     for scan in scans:
-        # print("Rendering scan", scan)
         station = scan[0:4]
         year = scan[4:8]
         month = scan[8:10]
@@ -87,3 +86,4 @@ def render_by_scan_list(filepath, scan_dir,
             f.write('\n'.join(dualpol_errors)+'\n')
 
     logger.info('***** Finished rendering for file %s *****' % (filepath))
+    return array_errors, dualpol_errors

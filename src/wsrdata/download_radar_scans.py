@@ -61,3 +61,4 @@ def download_by_scan_list(filepath, out_dir, log_path,
             f.write('\n'.join(error_scans)+'\n')
 
     logger.info('***** Finished downloading for file %s *****' % (filepath))
+    return {"not_s3": not_s3, "error_scans": error_scans}

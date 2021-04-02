@@ -134,14 +134,18 @@ SCAN_DIR                    = os.path.join(SCAN_ROOT_DIR, "scans")
 SCAN_LOG_DIR                = os.path.join(SCAN_ROOT_DIR, "logs")
 SCAN_LOG_NOT_S3_DIR         = os.path.join(SCAN_ROOT_DIR, "not_s3_logs")
 SCAN_LOG_ERROR_SCANS_DIR    = os.path.join(SCAN_ROOT_DIR, "error_scan_logs")
-ARRAY_CHANNELS              = [f"{attr}-{elev}" for attr in ARRAY_ATTRIBUTES for elev in ARRAY_ELEVATIONS]
-ARRAY_CHANNEL_INDICES       = {ARRAY_CHANNELS[i]: i for i in range(len(ARRAY_CHANNELS))}
+ARRAY_CHANNELS              = [(attr, elev) for attr in ARRAY_ATTRIBUTES for elev in ARRAY_ELEVATIONS]
+ARRAY_CHANNEL_INDICES       = {attr:{} for attr in ARRAY_ATTRIBUTES}
+for i, (attr, elev) in enumerate(ARRAY_CHANNELS):
+    ARRAY_CHANNEL_INDICES[attr][elev] = i # elev will become str when saved to json
 ARRAY_SHAPE                 = (len(ARRAY_CHANNELS), ARRAY_DIM, ARRAY_DIM)
-ARRAY_DIR                   = os.path.join("../static/arrays", ARRAY_VERSION)
-DUALPOL_CHANNELS            = [f"{attr}-{elev}" for attr in DUALPOL_ATTRIBUTES for elev in DUALPOL_ELEVATIONS]
-DUALPOL_CHANNEL_INDICES     = {DUALPOL_CHANNELS[i]: i for i in range(len(DUALPOL_CHANNELS))}
+ARRAY_DIR                   = os.path.join(os.getcwd(), "../static/arrays", ARRAY_VERSION)
+DUALPOL_CHANNELS            = [(attr, elev) for attr in DUALPOL_ATTRIBUTES for elev in DUALPOL_ELEVATIONS]
+DUALPOL_CHANNEL_INDICES     = {attr:{} for attr in DUALPOL_ATTRIBUTES}
+for i, (attr, elev) in enumerate(DUALPOL_CHANNELS):
+    DUALPOL_CHANNEL_INDICES[attr][elev] = i
 DUALPOL_SHAPE               = (len(DUALPOL_CHANNELS), DUALPOL_DIM, DUALPOL_DIM)
-DUALPOL_DIR                 = os.path.join("../static/arrays_for_dualpol", DUALPOL_VERSION)
+DUALPOL_DIR                 = os.path.join(os.getcwd(), "../static/arrays_for_dualpol", DUALPOL_VERSION)
 ANNOTATION_DIR              = os.path.join("../static/annotations", ANNOTATION_VERSION) if ANNOTATION_VERSION else ""
 BBOX_MODE                   = "XYWH"
 DATASET_DIR                 = f"../datasets/roosts-{DATASET_VERSION}"
@@ -176,7 +180,7 @@ if os.path.exists("../static/arrays/previous_versions.json"):
 for v in existing_versions:
     if v != "previous_versions.json":
         assert v in previous_versions
-# make sure there is no conflict
+# make sure there is no config conflict
 # otherwise, either choose a new ARRAY_VERSION or clean the existing/previous version
 if ARRAY_VERSION in previous_versions:
     assert previous_versions[ARRAY_VERSION] == ARRAY_RENDER_CONFIG
@@ -185,7 +189,7 @@ else:
     previous_versions[ARRAY_VERSION] = ARRAY_RENDER_CONFIG
     with open("../static/arrays/previous_versions.json", "w") as f:
         json.dump(previous_versions, f, indent=PRETTY_PRINT_INDENT)
-    os.mkdir(ARRAY_DIR)
+if not os.path.exists(ARRAY_DIR): os.mkdir(ARRAY_DIR)
 
 # make sure DUALPOL_VERSION is not empty and does not conflict with existing versions
 assert DUALPOL_VERSION
@@ -201,7 +205,7 @@ if os.path.exists("../static/arrays_for_dualpol/previous_versions.json"):
 for v in existing_versions:
     if v != "previous_versions.json":
         assert v in previous_versions
-# make sure there is no conflict
+# make sure there is no config conflict
 # otherwise, either choose a new ARRAY_VERSION or clean the existing/previous version
 if DUALPOL_VERSION in previous_versions:
     assert previous_versions[DUALPOL_VERSION] == DUALPOL_RENDER_CONFIG
@@ -210,7 +214,7 @@ else:
     previous_versions[DUALPOL_VERSION] = DUALPOL_RENDER_CONFIG
     with open("../static/arrays_for_dualpol/previous_versions.json", "w") as f:
         json.dump(previous_versions, f, indent=PRETTY_PRINT_INDENT)
-    os.mkdir(DUALPOL_DIR)
+if not os.path.exists(DUALPOL_DIR): os.mkdir(DUALPOL_DIR)
 
 
 ############### Step 3: sketch the dataset definition ###############
@@ -245,8 +249,9 @@ dataset = {
 
 ############### Step 4: Download radar scans by splits ###############
 print("Downloading scans...")
+download_errors = {}
 for split in SPLIT_PATHS:
-    download_by_scan_list(
+    download_errors[split] = download_by_scan_list(
         SPLIT_PATHS[split], SCAN_DIR,
         os.path.join(SCAN_LOG_DIR, f"{DATASET_VERSION}.log"),
         os.path.join(SCAN_LOG_NOT_S3_DIR, f"{DATASET_VERSION}.log"),
@@ -256,8 +261,10 @@ for split in SPLIT_PATHS:
 
 ############### Step 5: Render radar scans by splits ###############
 print("Rendering arrays...")
+array_errors = {}
+dualpol_errors = {}
 for split in SPLIT_PATHS:
-    render_by_scan_list(
+    array_errors[split], dualpol_errors[split] = render_by_scan_list(
         SPLIT_PATHS[split], SCAN_DIR,
         ARRAY_RENDER_CONFIG, ARRAY_ATTRIBUTES, ARRAY_DIR,
         DUALPOL_RENDER_CONFIG, DUALPOL_ATTRIBUTES, DUALPOL_DIR,
@@ -274,9 +281,6 @@ for split in SPLIT_PATHS:
     if ANNOTATION_VERSION:
         print("Loading annotations....")
         annotation_id = 0
-        # maybe define which annotations we want to include
-        # with open(os.path.join(ANNOTATION_DIR, "annotation_list.json"), "r") as f:
-        #     annotation_set = set(json.load(f))
 
         # annotations ordered alphabetically by scan, then by date, then by track, but not by second
         # fields are: 0 scan_id (different than ours), 1 filename, 2 sequence_id, 3 station, 4 year, 5 month,
@@ -291,13 +295,11 @@ for split in SPLIT_PATHS:
             annotation[11] = float(annotation[11])
             annotation[12] = float(annotation[12])
             annotation[13] = float(annotation[13])
-            if annotation[14] in BBOX_SCALING_FACTORS:
-                factor = BBOX_SCALING_FACTORS[annotation[14]]
-            else:
-                unknown_scaling_factors.add(annotation[14])
-                factor = None
-            # if there is a definition of which annotations to include
-            # if annotation[1][:-3] in annotation_set:
+            # if annotation[14] in BBOX_SCALING_FACTORS:
+            #     factor = BBOX_SCALING_FACTORS[annotation[14]]
+            # else:
+            #     unknown_scaling_factors.add(annotation[14])
+            #     factor = None
             x_im = (annotation[11] + ARRAY_RENDER_CONFIG["r_max"]) * ARRAY_DIM / (2 * ARRAY_RENDER_CONFIG["r_max"])
             y_im = (annotation[12] + ARRAY_RENDER_CONFIG["r_max"]) * ARRAY_DIM / (2 * ARRAY_RENDER_CONFIG["r_max"])
             r_im = annotation[13] * ARRAY_DIM / (2 * ARRAY_RENDER_CONFIG["r_max"])
@@ -311,9 +313,9 @@ for split in SPLIT_PATHS:
                 "y_im": y_im,
                 "r_im": r_im,
                 "bbox": [int(x_im-r_im), int(y_im-r_im),
-                         int(x_im+r_im)-int(x_im-r_im), int(y_im+r_im)-int(y_im-r_im)],
+                         int(x_im+r_im)-int(x_im-r_im)+1, int(y_im+r_im)-int(y_im-r_im)+1],
                 "bbox_annotator": annotation[14],
-                "bbox_scaling_factor": factor,
+                # "bbox_scaling_factor": factor,
             }
             if annotation[1][:-3] in annotation_dict:
                 annotation_dict[annotation[1][:-3]].append(new_annotation)
@@ -324,9 +326,6 @@ for split in SPLIT_PATHS:
               f"fine as long as the train/val/test split does not include these user-station pairs.")
 
     for n, scan in enumerate(scans):
-        # if n % 5000 == 0:
-        #     print("Adding scan {n+1}/{len(scans)}")
-
         # add array to dataset
         dataset["scans"][split].append({
             "scan_id":              scan_id,

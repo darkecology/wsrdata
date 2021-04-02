@@ -10,21 +10,27 @@
         "date_created": "2021/03/20",
         "array_version": "v0.1.0",
         "array_channel_indices": {
-            "reflectivity-0.5": 0,
-            "reflectivity-1.5": 1,
-            "reflectivity-2.5": 2,
-            "reflectivity-3.5": 3,
-            "reflectivity-4.5": 4,
-            "velocity-0.5": 5,
-            "velocity-1.5": 6,
-            "velocity-2.5": 7,
-            "velocity-3.5": 8,
-            "velocity-4.5": 9,
-            "spectrum_width-0.5": 10,
-            "spectrum_width-1.5": 11,
-            "spectrum_width-2.5": 12,
-            "spectrum_width-3.5": 13,
-            "spectrum_width-4.5": 14
+            "reflectivity": {
+                "0.5": 0,
+                "1.5": 1,
+                "2.5": 2,
+                "3.5": 3,
+                "4.5": 4
+            },
+            "velocity": {
+                "0.5": 5,
+                "1.5": 6,
+                "2.5": 7,
+                "3.5": 8,
+                "4.5": 9
+            },
+            "spectrum_width": {
+                "0.5": 10,
+                "1.5": 11,
+                "2.5": 12,
+                "3.5": 13,
+                "4.5": 14
+            }
         },
         "array_shape": [
             15,
@@ -56,21 +62,27 @@
         },
         "dualpol_version": "v0.1.0",
         "dualpol_channel_indices": {
-            "differential_reflectivity-0.5": 0,
-            "differential_reflectivity-1.5": 1,
-            "differential_reflectivity-2.5": 2,
-            "differential_reflectivity-3.5": 3,
-            "differential_reflectivity-4.5": 4,
-            "cross_correlation_ratio-0.5": 5,
-            "cross_correlation_ratio-1.5": 6,
-            "cross_correlation_ratio-2.5": 7,
-            "cross_correlation_ratio-3.5": 8,
-            "cross_correlation_ratio-4.5": 9,
-            "differential_phase-0.5": 10,
-            "differential_phase-1.5": 11,
-            "differential_phase-2.5": 12,
-            "differential_phase-3.5": 13,
-            "differential_phase-4.5": 14
+            "differential_reflectivity": {
+                "0.5": 0,
+                "1.5": 1,
+                "2.5": 2,
+                "3.5": 3,
+                "4.5": 4
+            },
+            "cross_correlation_ratio": {
+                "0.5": 5,
+                "1.5": 6,
+                "2.5": 7,
+                "3.5": 8,
+                "4.5": 9
+            },
+            "differential_phase": {
+                "0.5": 10,
+                "1.5": 11,
+                "2.5": 12,
+                "3.5": 13,
+                "4.5": 14
+            }
         },
         "dualpol_shape": [
             15,
@@ -185,11 +197,103 @@
         "train": [
             {
                 "scan_id": 0,
+                "scan": "KAMX20101024_111513_V03",
+                "minutes_from_sunrise": -10,
+                "array_path": "/scratch2/wenlongzhao/roosts2021/libs/wsrdata/tools/../static/arrays/v0.1.0/KAMX20101024_111513_V03.npy",
+                "array_license_id": 0,
+                "dualpol_path": "/scratch2/wenlongzhao/roosts2021/libs/wsrdata/tools/../static/arrays_for_dualpol/v0.1.0/KAMX20101024_111513_V03_dualpol.npy",
+                "dualpol_license_id": 0,
+                "annotations": [
+                    {
+                        "sequence_id": 3604,
+                        "category_id": 0,
+                        "x": -22192.5,
+                        "y": 61572.5,
+                        "r": 4162.5,
+                        "x_im": 255.615,
+                        "y_im": 423.145,
+                        "r_im": 8.325,
+                        "bbox": [
+                            247,
+                            414,
+                            17,
+                            18
+                        ],
+                        "bbox_annotator": "jberger1-KAMX",
+                        "annotation_id": 0,
+                        "scan_id": 0
+                    }
+                ]
+            },
+            {
+                "scan_id": 1,
+                "scan": "KAMX20101024_112106_V03",
+                "minutes_from_sunrise": -4,
+                "array_path": "/scratch2/wenlongzhao/roosts2021/libs/wsrdata/tools/../static/arrays/v0.1.0/KAMX20101024_112106_V03.npy",
+                "array_license_id": 0,
+                "dualpol_path": "/scratch2/wenlongzhao/roosts2021/libs/wsrdata/tools/../static/arrays_for_dualpol/v0.1.0/KAMX20101024_112106_V03_dualpol.npy",
+                "dualpol_license_id": 0,
+                "annotations": [
+                    {
+                        "sequence_id": 3604,
+                        "category_id": 0,
+                        "x": -22192.5,
+                        "y": 61572.5,
+                        "r": 7482.079258526,
+                        "x_im": 255.615,
+                        "y_im": 423.145,
+                        "r_im": 14.964158517052,
+                        "bbox": [
+                            240,
+                            408,
+                            31,
+                            31
+                        ],
+                        "bbox_annotator": "jberger1-KAMX",
+                        "annotation_id": 1,
+                        "scan_id": 1
+                    }
+                ]
+            },
+            {
+                "scan_id": 2,
+                "scan": "KAMX20101024_112700_V03",
+                "minutes_from_sunrise": 2,
+                "array_path": "/scratch2/wenlongzhao/roosts2021/libs/wsrdata/tools/../static/arrays/v0.1.0/KAMX20101024_112700_V03.npy",
+                "array_license_id": 0,
+                "dualpol_path": "/scratch2/wenlongzhao/roosts2021/libs/wsrdata/tools/../static/arrays_for_dualpol/v0.1.0/KAMX20101024_112700_V03_dualpol.npy",
+                "dualpol_license_id": 0,
+                "annotations": [
+                    {
+                        "sequence_id": 3604,
+                        "category_id": 0,
+                        "x": -22192.5,
+                        "y": 61572.5,
+                        "r": 13634.87259829,
+                        "x_im": 255.615,
+                        "y_im": 423.145,
+                        "r_im": 27.26974519658,
+                        "bbox": [
+                            228,
+                            395,
+                            55,
+                            56
+                        ],
+                        "bbox_annotator": "jberger1-KAMX",
+                        "annotation_id": 2,
+                        "scan_id": 2
+                    }
+                ]
+            }
+        ],
+        "test": [
+            {
+                "scan_id": 0,
                 "scan": "KOKX20130721_093320_V06",
                 "minutes_from_sunrise": null,
-                "array_path": "../static/arrays/v0.1.0/KOKX20130721_093320_V06.npy",
+                "array_path": "/scratch2/wenlongzhao/roosts2021/libs/wsrdata/tools/../static/arrays/v0.1.0/KOKX20130721_093320_V06.npy",
                 "array_license_id": 0,
-                "dualpol_path": "../static/arrays_for_dualpol/v0.1.0/KOKX20130721_093320_V06_dualpol.npy",
+                "dualpol_path": "/scratch2/wenlongzhao/roosts2021/libs/wsrdata/tools/../static/arrays_for_dualpol/v0.1.0/KOKX20130721_093320_V06_dualpol.npy",
                 "dualpol_license_id": 0,
                 "annotations": []
             },
@@ -197,9 +301,9 @@
                 "scan_id": 1,
                 "scan": "KTBW20090209_120356_V03",
                 "minutes_from_sunrise": -7,
-                "array_path": "../static/arrays/v0.1.0/KTBW20090209_120356_V03.npy",
+                "array_path": "/scratch2/wenlongzhao/roosts2021/libs/wsrdata/tools/../static/arrays/v0.1.0/KTBW20090209_120356_V03.npy",
                 "array_license_id": 0,
-                "dualpol_path": "../static/arrays_for_dualpol/v0.1.0/KTBW20090209_120356_V03_dualpol.npy",
+                "dualpol_path": "/scratch2/wenlongzhao/roosts2021/libs/wsrdata/tools/../static/arrays_for_dualpol/v0.1.0/KTBW20090209_120356_V03_dualpol.npy",
                 "dualpol_license_id": 0,
                 "annotations": [
                     {
@@ -214,11 +318,10 @@
                         "bbox": [
                             269,
                             152,
-                            63,
-                            64
+                            64,
+                            65
                         ],
                         "bbox_annotator": "jberger1-KTBW",
-                        "bbox_scaling_factor": 1.0710975633513655,
                         "annotation_id": 0,
                         "scan_id": 1
                     }
@@ -228,64 +331,11 @@
                 "scan_id": 2,
                 "scan": "KTBW20031123_115217",
                 "minutes_from_sunrise": null,
-                "array_path": "../static/arrays/v0.1.0/KTBW20031123_115217.npy",
+                "array_path": "/scratch2/wenlongzhao/roosts2021/libs/wsrdata/tools/../static/arrays/v0.1.0/KTBW20031123_115217.npy",
                 "array_license_id": 0,
-                "dualpol_path": "../static/arrays_for_dualpol/v0.1.0/KTBW20031123_115217_dualpol.npy",
+                "dualpol_path": "/scratch2/wenlongzhao/roosts2021/libs/wsrdata/tools/../static/arrays_for_dualpol/v0.1.0/KTBW20031123_115217_dualpol.npy",
                 "dualpol_license_id": 0,
                 "annotations": []
-            }
-        ],
-        "test": [
-            {
-                "scan_id": 0,
-                "scan": "KTBW20020212_114402",
-                "minutes_from_sunrise": null,
-                "array_path": "../static/arrays/v0.1.0/KTBW20020212_114402.npy",
-                "array_license_id": 0,
-                "dualpol_path": "../static/arrays_for_dualpol/v0.1.0/KTBW20020212_114402_dualpol.npy",
-                "dualpol_license_id": 0,
-                "annotations": []
-            },
-            {
-                "scan_id": 1,
-                "scan": "KTBW20120107_122857_V03",
-                "minutes_from_sunrise": null,
-                "array_path": "../static/arrays/v0.1.0/KTBW20120107_122857_V03.npy",
-                "array_license_id": 0,
-                "dualpol_path": "../static/arrays_for_dualpol/v0.1.0/KTBW20120107_122857_V03_dualpol.npy",
-                "dualpol_license_id": 0,
-                "annotations": []
-            },
-            {
-                "scan_id": 2,
-                "scan": "KMLB20101025_113000_V03",
-                "minutes_from_sunrise": 1,
-                "array_path": "../static/arrays/v0.1.0/KMLB20101025_113000_V03.npy",
-                "array_license_id": 0,
-                "dualpol_path": "../static/arrays_for_dualpol/v0.1.0/KMLB20101025_113000_V03_dualpol.npy",
-                "dualpol_license_id": 0,
-                "annotations": [
-                    {
-                        "sequence_id": 3907,
-                        "category_id": 0,
-                        "x": -1207.0,
-                        "y": -41656.5,
-                        "r": 11803.873246884,
-                        "x_im": 297.586,
-                        "y_im": 216.687,
-                        "r_im": 23.607746493768,
-                        "bbox": [
-                            273,
-                            193,
-                            48,
-                            47
-                        ],
-                        "bbox_annotator": "andrew-KMLB",
-                        "bbox_scaling_factor": 0.8846939182400024,
-                        "annotation_id": 0,
-                        "scan_id": 2
-                    }
-                ]
             }
         ]
     }
