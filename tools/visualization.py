@@ -90,5 +90,5 @@ for split in SPLIT_PATHS:
         # save
         if not os.path.exists(OUTPUT_DIR):
             os.mkdir(OUTPUT_DIR)
-        fig.savefig(os.path.join(OUTPUT_DIR, SCAN + ".png"))
+        fig.savefig(os.path.join(OUTPUT_DIR, SCAN + ".png"), bbox_inches="tight")
         plt.close(fig)
