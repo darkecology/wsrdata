@@ -4,11 +4,8 @@ Given radar scans and specifications, this repository prepares datasets for trai
 machine learning models for detecting and tracking communal bird roosts. 
 
 ### Under Construction
-- Which user models (i.e. scaling factors) to use for bbox annotations?
-- Dataset visualization from npy arrays and annotations
-- If there is a newly established standard input format for annotations, related code including those in 
-step 6 of tools/prepare_dataset_v0.1.0.py will need to be updated
-- Conversion between json and csv
+- Which user models (i.e. scaling factors) to use for bbox annotations? 
+Conversion between json and csv and use web interface to check
 
 ### Overview
 - **datasets** is a directory reserved for json files created by this repository 
@@ -43,14 +40,14 @@ We use 0-based indexing for all ids; None, empty lists, empty strings, etc to in
         "array_shape":              (15, 600, 600),
         "array_render_config":      render_config,
         "dualpol_version":          "v0.0.1",
-        "dualpol_channel_indices":  {"differential_reflectivity":   {0.5: 0,
-                                                                     1.5: 1,
+        "dualpol_channel_indices":  {"differential_reflectivity":   {"0.5": 0,
+                                                                     "1.5": 1,
                                                                      ...},
-                                     "cross_correlation_ratio":     {0.5: 5,
-                                                                     1.5: 6,
+                                     "cross_correlation_ratio":     {"0.5": 5,
+                                                                     "1.5": 6,
                                                                      ...},
-                                     "differential_phase":          {0.5: 10,
-                                                                     1.5: 11,
+                                     "differential_phase":          {"0.5": 10,
+                                                                     "1.5": 11,
                                                                      ...}},
         "dualpol_shape":            (15, 600, 600),
         "dualpol_render_config":    render_config,
@@ -109,11 +106,14 @@ We use 0-based indexing for all ids; None, empty lists, empty strings, etc to in
     }
     ```
 
+- **datasets/roosts-v0.1.0-official** defines a toy dataset as a reference:
+    - **roosts-v0.1.0.json** is a human-readable json generated with line indentation of 4
+    - **visualization** contains scan visualization (with bounding boxes) which can be generated using 
+    **tools/visualization.py** and **tools/visualization.ipynb**
+
 - **src/wsrdata** implements functions relevant to dataset preparation and analyses:
     - **download_radar_scans.py** downloads radar scans
     - **render_npy_arrays.py** renders npy arrays from radar scans
-    - **visualize_data.py** generates images for a selected channel in npy arrays 
-    with annotations extracted from json
     - **utils** contains utility/help functions
 
 - **static** contains static files that are inputs to the dataset preparation pipeline or 
@@ -121,18 +121,21 @@ generated during the preparation (see the following Release section more info):
     - **splits** is for different versions of data splits
     - **scans** is reserved for downloaded radar scans
     - **annotations** is for different versions of annotations
+        - Note: For dataset v0.1.0, a csv file named **user_annotations.txt** is used as the source of annotations. 
+        If in the future there is a new input format for annotations, related code including that in 
+        step 6 of **tools/prepare_dataset_\*.py** will need to be updated.
     - **user_models** is for different versions of bounding box scaling factors learned by EM [1]
     - **arrays** is for different versions of npy arrays rendered from scans according to splits
     - **arrays_for_dualpol** is for different versions of dualpol npy arrays rendered from scans according to splits
-    - **visualization** is for different versions of visualization for the (reflectivity, 0.5) channel with annotations. 
 
 - **tools** contains scripts that are entry points of the data preparation pipeline,
  call functions in **src/wsrdata**, and partially or entirely run the dataset preparation pipeline:
     - **prepare_dataset_v0.1.0.py** is a modifiable template that, given metadata,
     download radar scans, render npy arrays, read annotations, and create json files which define datasets
-    - **run_visualize_data.py** generates and saves visualization images from npy arrays and annotations from json files
-    - **visualize_data.ipynb** interactively (1) renders and visualizes scans and 
-    (2) generates visualization images from npy arrays and annotations from json files
+    - **visualization.py** generates npg images that visualize channels in npy arrays for a list of scans 
+    with annotations from a json file
+    - **visualization.ipynb** can interactively (1) render and visualize a scan and 
+    (2) visualize channels from a npy array with its annotation(s) from a json file
 
 ### Release
 #### datasets
@@ -233,8 +236,8 @@ To produce a customized dataset, place customized split definitions and annotati
 
 ### Dataset Visualization
 There are two ways to visualize data.
-1. Run `tools/visualize_data.ipynb` to interactively (1) render and visualize scans or 
-    (2) generate visualization images from npy arrays and annotations from json files.
+1. Run `tools/visualization.ipynb` to interactively (1) render and visualize a scan or 
+    (2) visualize channels from a npy array with its annotations from a json file.
     - Run `pip3 install jupyter` to install jupyter
     - Add the python environment to jupyter: 
         ```bash
@@ -250,8 +253,8 @@ There are two ways to visualize data.
     - Monitor from local: `ssh -N -f -L localhost:9998:localhost:9999 username@server`
     - Enter `localhost:9998` from a local browser tab to run the jupyter notebook interactively;
       the notebook should be self-explanatory.
-2. `tools/run_visualize_data.py` calls `src/wsrdata/visualize_data.py` to generate visualization images
-    from npy arrays and annotations from json.
+2. `tools/visualization.py`, given a scan list file and a json file, can generate png images that 
+    visualizes channels from npy arrays of the scans with annotations from the json file.
 
 ### References
 [1] [Detecting and Tracking Communal Bird Roosts in Weather Radar Data.](https://people.cs.umass.edu/~zezhoucheng/roosts/radar-roosts-aaai20.pdf)
