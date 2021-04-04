@@ -24,6 +24,7 @@ import scipy.io as sio
 import wsrlib
 from wsrdata.download_radar_scans import download_by_scan_list
 from wsrdata.render_npy_arrays import render_by_scan_list
+from wsrdata.utils.bbox_utils import scale_XYWH_box
 
 ############### Step 1: define metadata ###############
 PRETTY_PRINT_INDENT = None # default None; if integer n, generated json will be human-readable with n indentations
@@ -31,7 +32,7 @@ PRETTY_PRINT_INDENT = None # default None; if integer n, generated json will be 
 DESCRIPTION         = "The official wsrdata roost dataset v1.0.0 with bbox annotations."
 COMMENTS            = "(1) \"bbox\" is standardized to \"Dan Sheldon\" format using scaling factors " \
                       "learned by the EM algorithm proposed by Cheng et al. (2019), while " \
-                      "the factors used are recorded in the \"bbox_scaling_factor\" field." #TODO
+                      "the factors used are recorded in the \"bbox_scaling_factors\" field." # TODO
 URL                 = ""
 DATASET_VERSION     = "v1.0.0"
 SPLIT_VERSION       = "v1.0.0"
@@ -62,6 +63,8 @@ DEFAULT_LIC_ID      = 0 # by default, use LICENSES[0] for the rendered arrays
 CATEGORIES          = ["roost"]
 DEFAULT_CAT_ID      = 0 # by default, annotations are for CATEGORIES[0] which is "roost" in this template
 OVERWRITE_DATASET   = True # overwrites the previous json file if the specified dataset version already exists
+SKIP_DOWNLOADING    = True # True if downloading is donw seperately already
+SKIP_RENDERING      = True # True if rendering is done seperately already
 
 SPLIT_PATHS         = {"train": os.path.join("../static/splits", SPLIT_VERSION, "train.txt"),
                        "val": os.path.join("../static/splits", SPLIT_VERSION, "val.txt"),
@@ -248,58 +251,55 @@ dataset = {
 
 
 ############### Step 4: Download radar scans by splits ###############
-print("Downloading scans...")
-download_errors = {}
-for split in SPLIT_PATHS:
-    download_errors[split] = download_by_scan_list(
-        SPLIT_PATHS[split], SCAN_DIR,
-        os.path.join(SCAN_LOG_DIR, f"{DATASET_VERSION}.log"),
-        os.path.join(SCAN_LOG_NOT_S3_DIR, f"{DATASET_VERSION}.log"),
-        os.path.join(SCAN_LOG_ERROR_SCANS_DIR, f"{DATASET_VERSION}.log")
-    )
+if not SKIP_DOWNLOADING:
+    print("Downloading scans...")
+    download_errors = {}
+    for split in SPLIT_PATHS:
+        download_errors[split] = download_by_scan_list(
+            SPLIT_PATHS[split], SCAN_DIR,
+            os.path.join(SCAN_LOG_DIR, f"{DATASET_VERSION}.log"),
+            os.path.join(SCAN_LOG_NOT_S3_DIR, f"{DATASET_VERSION}.log"),
+            os.path.join(SCAN_LOG_ERROR_SCANS_DIR, f"{DATASET_VERSION}.log")
+        )
 
 
 ############### Step 5: Render radar scans by splits ###############
-print("Rendering arrays...")
-array_errors = {}
-dualpol_errors = {}
-for split in SPLIT_PATHS:
-    array_errors[split], dualpol_errors[split] = render_by_scan_list(
-        SPLIT_PATHS[split], SCAN_DIR,
-        ARRAY_RENDER_CONFIG, ARRAY_ATTRIBUTES, ARRAY_DIR,
-        DUALPOL_RENDER_CONFIG, DUALPOL_ATTRIBUTES, DUALPOL_DIR,
-    )
+if not SKIP_RENDERING:
+    print("Rendering arrays...")
+    array_errors = {}
+    dualpol_errors = {}
+    for split in SPLIT_PATHS:
+        array_errors[split], dualpol_errors[split] = render_by_scan_list(
+            SPLIT_PATHS[split], SCAN_DIR,
+            ARRAY_RENDER_CONFIG, ARRAY_ATTRIBUTES, ARRAY_DIR,
+            DUALPOL_RENDER_CONFIG, DUALPOL_ATTRIBUTES, DUALPOL_DIR,
+        )
 
 
 ############### Step 6: Populate the dataset definition and save to json ###############
 print("Populating the dataset definition...")
-for split in SPLIT_PATHS:
-    print(f"Starting the {split} split...")
-    scans = [scan.strip() for scan in open(SPLIT_PATHS[split], "r").readlines()]
-    scan_id = 0 # for arrays and dualpol arrays
 
-    if ANNOTATION_VERSION:
-        print("Loading annotations....")
-        annotation_id = 0
+# Load annotations
+if ANNOTATION_VERSION:
+    print("Loading annotations....")
 
-        # annotations ordered alphabetically by scan, then by date, then by track, but not by second
-        # fields are: 0 scan_id (different than ours), 1 filename, 2 sequence_id, 3 station, 4 year, 5 month,
-        #         6 day, 7 hour, 8 minute, 9 second, 10 minutes_from_sunrise, 11 x, 12 y, 13 r, 14 username
-        annotations = [annotation.strip().split(",") for annotation in
-                       open(os.path.join(ANNOTATION_DIR, "user_annotations.txt"), "r").readlines()[1:]]
-        # Preparation: load annotations into a dictionary where scan names are keys
-        annotation_dict = {}
-        minutes_from_sunrise_dict = {}
-        unknown_scaling_factors = set()
-        for annotation in annotations:
-            annotation[11] = float(annotation[11])
-            annotation[12] = float(annotation[12])
-            annotation[13] = float(annotation[13])
-            # if annotation[14] in BBOX_SCALING_FACTORS:
-            #     factor = BBOX_SCALING_FACTORS[annotation[14]]
-            # else:
-            #     unknown_scaling_factors.add(annotation[14])
-            #     factor = None
+    # annotations ordered alphabetically by scan, then by date, then by track, but not by second
+    # fields are: 0 scan_id (different than ours), 1 filename, 2 sequence_id, 3 station, 4 year, 5 month,
+    #         6 day, 7 hour, 8 minute, 9 second, 10 minutes_from_sunrise, 11 x, 12 y, 13 r, 14 username
+    annotations = [annotation.strip().split(",") for annotation in
+                   open(os.path.join(ANNOTATION_DIR, "user_annotations.txt"), "r").readlines()[1:]]
+    # Preparation: load annotations into a dictionary where scan names are keys
+    annotation_dict = {}
+    minutes_from_sunrise_dict = {}
+    unknown_scaling_factors = set()
+    for annotation in annotations:
+        annotation[11] = float(annotation[11])
+        annotation[12] = float(annotation[12])
+        annotation[13] = float(annotation[13])
+        if annotation[14] not in BBOX_SCALING_FACTORS:
+            # ignore annotation if no user scaling factor learned for the annotation-station pair
+            unknown_scaling_factors.add(annotation[14])
+        else:
             x_im = (annotation[11] + ARRAY_RENDER_CONFIG["r_max"]) * ARRAY_DIM / (2 * ARRAY_RENDER_CONFIG["r_max"])
             y_im = (annotation[12] + ARRAY_RENDER_CONFIG["r_max"]) * ARRAY_DIM / (2 * ARRAY_RENDER_CONFIG["r_max"])
             r_im = annotation[13] * ARRAY_DIM / (2 * ARRAY_RENDER_CONFIG["r_max"])
@@ -312,19 +312,27 @@ for split in SPLIT_PATHS:
                 "x_im": x_im,
                 "y_im": y_im,
                 "r_im": r_im,
-                "bbox": [int(x_im-r_im), int(y_im-r_im),
-                         int(x_im+r_im)-int(x_im-r_im)+1, int(y_im+r_im)-int(y_im-r_im)+1],
+                "bbox": scale_XYWH_box([int(x_im - r_im), int(y_im - r_im),
+                                        int(x_im + r_im) - int(x_im - r_im) + 1,
+                                        int(y_im + r_im) - int(y_im - r_im) + 1],
+                                       BBOX_SCALING_FACTORS[annotation[14]]),
                 "bbox_annotator": annotation[14],
-                # "bbox_scaling_factor": factor,
             }
-            if annotation[1][:-3] in annotation_dict:
-                annotation_dict[annotation[1][:-3]].append(new_annotation)
+            if annotation[1].split(".")[0] in annotation_dict:
+                annotation_dict[annotation[1].split(".")[0]].append(new_annotation)
             else:
-                annotation_dict[annotation[1][:-3]] = [new_annotation]
-            minutes_from_sunrise_dict[annotation[1][:-3]] = int(annotation[10])
-        print(f"Unknown user models / bbox scaling factors for {unknown_scaling_factors} but "
-              f"fine as long as the train/val/test split does not include these user-station pairs.")
+                annotation_dict[annotation[1].split(".")[0]] = [new_annotation]
+            minutes_from_sunrise_dict[annotation[1].split(".")[0]] = int(annotation[10])
+    print(f"Unknown user models / bbox scaling factors for {unknown_scaling_factors} but "
+          f"fine as long as the train/val/test split does not include these user-station pairs.")
 
+# Load scan names and populate the dataset definition
+for split in SPLIT_PATHS:
+    print(f"Starting the {split} split...")
+
+    scans = [scan.strip() for scan in open(SPLIT_PATHS[split], "r").readlines()]
+    scan_id = 0 # for arrays and dualpol arrays
+    annotation_id = 0
     for n, scan in enumerate(scans):
         # add array to dataset
         dataset["scans"][split].append({
@@ -342,10 +350,6 @@ for split in SPLIT_PATHS:
             annotation["annotation_id"] = annotation_id
             annotation_id += 1
             annotation["scan_id"] = scan_id
-
-            if annotation["bbox_annotator"] in unknown_scaling_factors:
-                print(f"Problem: annotation {annotation_id} for scan {scan_id} involves unknown "
-                      f"annotator-station pair and scaling factor.")
 
         scan_id += 1
 

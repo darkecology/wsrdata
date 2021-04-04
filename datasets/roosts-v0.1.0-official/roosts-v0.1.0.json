@@ -214,10 +214,10 @@
                         "y_im": 423.145,
                         "r_im": 8.325,
                         "bbox": [
-                            247,
-                            414,
-                            17,
-                            18
+                            248,
+                            415,
+                            15.0,
+                            16.0
                         ],
                         "bbox_annotator": "jberger1-KAMX",
                         "annotation_id": 0,
@@ -244,10 +244,10 @@
                         "y_im": 423.145,
                         "r_im": 14.964158517052,
                         "bbox": [
-                            240,
-                            408,
-                            31,
-                            31
+                            243,
+                            411,
+                            25.0,
+                            25.0
                         ],
                         "bbox_annotator": "jberger1-KAMX",
                         "annotation_id": 1,
@@ -274,10 +274,10 @@
                         "y_im": 423.145,
                         "r_im": 27.26974519658,
                         "bbox": [
-                            228,
-                            395,
-                            55,
-                            56
+                            234,
+                            401,
+                            43.0,
+                            44.0
                         ],
                         "bbox_annotator": "jberger1-KAMX",
                         "annotation_id": 2,
@@ -316,10 +316,10 @@
                         "y_im": 184.343,
                         "r_im": 31.658051314002,
                         "bbox": [
-                            269,
-                            152,
-                            64,
-                            65
+                            278,
+                            161,
+                            46.0,
+                            47.0
                         ],
                         "bbox_annotator": "jberger1-KTBW",
                         "annotation_id": 0,
@@ -330,12 +330,32 @@
             {
                 "scan_id": 2,
                 "scan": "KTBW20031123_115217",
-                "minutes_from_sunrise": null,
+                "minutes_from_sunrise": -5,
                 "array_path": "/scratch2/wenlongzhao/roosts2021/libs/wsrdata/tools/../static/arrays/v0.1.0/KTBW20031123_115217.npy",
                 "array_license_id": 0,
                 "dualpol_path": "/scratch2/wenlongzhao/roosts2021/libs/wsrdata/tools/../static/arrays_for_dualpol/v0.1.0/KTBW20031123_115217_dualpol.npy",
                 "dualpol_license_id": 0,
-                "annotations": []
+                "annotations": [
+                    {
+                        "sequence_id": 11210,
+                        "category_id": 0,
+                        "x": 71334.5,
+                        "y": -72708.5,
+                        "r": 18711.49011971,
+                        "x_im": 442.669,
+                        "y_im": 154.583,
+                        "r_im": 37.42298023942,
+                        "bbox": [
+                            416,
+                            128,
+                            54.0,
+                            54.0
+                        ],
+                        "bbox_annotator": "jberger1-KTBW",
+                        "annotation_id": 1,
+                        "scan_id": 2
+                    }
+                ]
             }
         ]
     }
