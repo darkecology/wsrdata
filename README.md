@@ -9,9 +9,9 @@ machine learning models for detecting and tracking communal bird roosts.
     - https://drive.google.com/drive/folders/10T2lIntArAd-X1MsvNKU1_0gYobIlJYl?usp=sharing
 - Rendering
     - failure cases
-    - seemingly empty channels, examples of which visualized in
+    - seemingly empty channels in visualization
+        - roosts-v1.0.0-official/visualization, see google drive link above, e.g. KLIX20070330_114649...
         - roosts-v0.1.0-official/visualization, e.g. KOKX20130721...
-        - roosts-v1.0.0-official/visualization, e.g. KLIX20070330_114649.png
 - release v1.0.0: json + what?
 - json to csv
 - probably not an issue but need to check: annotation file names with .Z ending instead of .gz
