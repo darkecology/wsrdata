@@ -185,12 +185,12 @@ by EM. Consider outputs of Faster RCNN in [1] as ground truth: User factor = bia
 User factors are currently manually imported to `tools/prepare_dataset_v0.1.0.py`.
 
 #### arrays
-- **v0.1.0**: 600x600x15 arrays where the channels are _[reflectivity, velocity, spectrum_width] x 
+- **v0.1.0**: 15x600x600 arrays where the channels are _[reflectivity, velocity, spectrum_width] x 
 elevations [0.5, 1.5, 2.5, 3.5, 4.5]_.
 - **v1.0.0**: same attributes as v0.1.0.
 
 #### arrays_for_dualpol
-- **v0.1.0**: 600x600x15 arrays where the channels are _[differential_reflectivity, cross_correlation_ratio, differential_phase] x 
+- **v0.1.0**: 15x600x600 arrays where the channels are _[differential_reflectivity, cross_correlation_ratio, differential_phase] x 
 elevations [0.5, 1.5, 2.5, 3.5, 4.5]_.
 - **v1.0.0**: same attributes as v0.1.0.
 
