@@ -4,6 +4,7 @@ Given radar scan lists, annotations, and specifications, this repository prepare
 machine learning models for detecting and tracking communal bird roosts. 
 
 ### Under Construction
+- ydirection in rendering and visualization
 - black background for visualization
 - check shapes of rendered arrays, remove scans with rendering exceptions from splits
 - install the dataset to Detectron2
