@@ -1,0 +1,220 @@
+{
+    "info": {
+        "description": "A mini roost dataset with bbox annotations for testing whether the data preparation pipeline is successfully set up. Three scans in the train and test splits respectively.",
+        "comments": "(1) There is no restrictions on radar scans and thus we use Public Domain Mark for them; we use the Apache License 2.0 for this dataset. (2) Bounding boxes are standardized to the heuristic scaling factor of 0.7429 using scaling factors learned by the EM algorithm as in Cheng et al. (2019). (3) Paths in this json use / instead of \\; this may need to be changes for a different OS.",
+        "url": "",
+        "dataset_version": "v0.0.1",
+        "license": {
+            "url": "http://www.apache.org/licenses/",
+            "name": "Apache License 2.0"
+        },
+        "scan_license": {
+            "url": "https://creativecommons.org/share-your-work/public-domain/pdm/",
+            "name": "Public Domain Mark"
+        },
+        "annotation_version": "v1.0.0",
+        "user_model_version": "v1.0.0_hardEM200000",
+        "date_created": "2021/04/10",
+        "array_version": "v0.0.1",
+        "array_dir": "/scratch2/wenlongzhao/roosts2021/libs/wsrdata/tools/../static/arrays/v0.0.1",
+        "array_dimension_order": [
+            "field",
+            "elevation",
+            "y",
+            "x"
+        ],
+        "array_ydirection": "ij",
+        "array_shape": [
+            3,
+            5,
+            600,
+            600
+        ],
+        "array_fields": [
+            "reflectivity",
+            "velocity",
+            "spectrum_width"
+        ],
+        "array_elevations": [
+            0.5,
+            1.5,
+            2.5,
+            3.5,
+            4.5
+        ],
+        "array_r_max": 150000.0,
+        "dualpol_shape": [
+            3,
+            5,
+            600,
+            600
+        ],
+        "dualpol_fields": [
+            "differential_reflectivity",
+            "cross_correlation_ratio",
+            "differential_phase"
+        ],
+        "dualpol_elevations": [
+            0.5,
+            1.5,
+            2.5,
+            3.5,
+            4.5
+        ],
+        "bbox_mode": "XYWH"
+    },
+    "scans": [
+        {
+            "id": 0,
+            "key": "KAMX20101024_111513_V03",
+            "minutes_from_sunrise": -10,
+            "array_path": "2010/10/24/KAMX/KAMX20101024_111513_V03.npz",
+            "annotation_ids": [
+                0
+            ]
+        },
+        {
+            "id": 1,
+            "key": "KAMX20101024_112106_V03",
+            "minutes_from_sunrise": -4,
+            "array_path": "2010/10/24/KAMX/KAMX20101024_112106_V03.npz",
+            "annotation_ids": [
+                1
+            ]
+        },
+        {
+            "id": 2,
+            "key": "KAMX20101024_112700_V03",
+            "minutes_from_sunrise": 2,
+            "array_path": "2010/10/24/KAMX/KAMX20101024_112700_V03.npz",
+            "annotation_ids": [
+                2
+            ]
+        },
+        {
+            "id": 3,
+            "key": "KOKX20130721_093320_V06",
+            "minutes_from_sunrise": null,
+            "array_path": "2013/07/21/KOKX/KOKX20130721_093320_V06.npz",
+            "annotation_ids": []
+        },
+        {
+            "id": 4,
+            "key": "KTBW20090209_120356_V03",
+            "minutes_from_sunrise": -7,
+            "array_path": "2009/02/09/KTBW/KTBW20090209_120356_V03.npz",
+            "annotation_ids": [
+                3
+            ]
+        },
+        {
+            "id": 5,
+            "key": "KTBW20031123_115217",
+            "minutes_from_sunrise": -5,
+            "array_path": "2003/11/23/KTBW/KTBW20031123_115217.npz",
+            "annotation_ids": [
+                4
+            ]
+        }
+    ],
+    "annotations": [
+        {
+            "id": 0,
+            "image_id": 0,
+            "category_id": 0,
+            "sequence_id": 3604,
+            "x": -22192.5,
+            "y": 61572.5,
+            "r": 4162.5,
+            "x_im": 255.615,
+            "y_im": 423.145,
+            "r_im": 8.325,
+            "bbox": [
+                248,
+                415,
+                15.0,
+                16.0
+            ],
+            "bbox_area": 240.0
+        },
+        {
+            "id": 1,
+            "image_id": 1,
+            "category_id": 0,
+            "sequence_id": 3604,
+            "x": -22192.5,
+            "y": 61572.5,
+            "r": 7482.079258526,
+            "x_im": 255.615,
+            "y_im": 423.145,
+            "r_im": 14.964158517052,
+            "bbox": [
+                243,
+                411,
+                25.0,
+                25.0
+            ],
+            "bbox_area": 625.0
+        },
+        {
+            "id": 2,
+            "image_id": 2,
+            "category_id": 0,
+            "sequence_id": 3604,
+            "x": -22192.5,
+            "y": 61572.5,
+            "r": 13634.87259829,
+            "x_im": 255.615,
+            "y_im": 423.145,
+            "r_im": 27.26974519658,
+            "bbox": [
+                234,
+                401,
+                43.0,
+                44.0
+            ],
+            "bbox_area": 1892.0
+        },
+        {
+            "id": 3,
+            "image_id": 4,
+            "category_id": 0,
+            "sequence_id": 12613,
+            "x": 371.00000000001,
+            "y": -57828.5,
+            "r": 15829.025657001,
+            "x_im": 300.742,
+            "y_im": 184.343,
+            "r_im": 31.658051314002,
+            "bbox": [
+                278,
+                161,
+                46.0,
+                47.0
+            ],
+            "bbox_area": 2162.0
+        },
+        {
+            "id": 4,
+            "image_id": 5,
+            "category_id": 0,
+            "sequence_id": 11210,
+            "x": 71334.5,
+            "y": -72708.5,
+            "r": 18711.49011971,
+            "x_im": 442.669,
+            "y_im": 154.583,
+            "r_im": 37.42298023942,
+            "bbox": [
+                416,
+                128,
+                54.0,
+                54.0
+            ],
+            "bbox_area": 2916.0
+        }
+    ],
+    "categories": [
+        "roost"
+    ]
+}
