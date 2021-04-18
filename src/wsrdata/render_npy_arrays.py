@@ -8,14 +8,14 @@ import numpy as np
 # inputs a txt file where each line is a scan name, e.g.
 # KOKX20130721_093320_V06
 # KTBW20031123_115217
-def render_by_scan_list(filepath, scan_dir,
-                        array_render_config, array_attributes, array_dir,
-                        dualpol_render_config, dualpol_attributes, dualpol_dir):
+def render_by_scan_list(filepath, scan_dir, array_dir,
+                        array_render_config, dualpol_render_config,
+                        force_rendering=False):
 
     log_path = os.path.join(array_dir, "rendering.log")
         # this includes successful rendering for arrays and dualpol arrays
-    array_error_log_path = os.path.join(array_dir, "errors.log")
-    dualpol_error_log_path = os.path.join(dualpol_dir, "errors.log")
+    array_error_log_path = os.path.join(array_dir, "array_error_scans.log")
+    dualpol_error_log_path = os.path.join(array_dir, "dualpol_error_scans.log")
 
     logger = logging.getLogger(__name__)
     if not logger.handlers:
@@ -39,44 +39,51 @@ def render_by_scan_list(filepath, scan_dir,
         year = scan[4:8]
         month = scan[8:10]
         date = scan[10:12]
-        scan_file = os.path.join(scan_dir, '%s/%s/%s/%s/%s.gz' % (year, month, date, station, scan))
+        scan_file = os.path.join(scan_dir, f"{year}/{month}/{date}/{station}/{scan}.gz")
+        arrays = {}
+        npz_path = os.path.join(array_dir, f"{year}/{month}/{date}/{station}/{scan}.npz")
 
-        if not os.path.exists(os.path.join(array_dir, scan+".npy")) or \
-                not os.path.exists(os.path.join(dualpol_dir, scan+"_dualpol.npy")):
-            try:
-                radar = pyart.io.read_nexrad_archive(scan_file)
-                logger.info('Loaded scan %s' % scan)
-            except Exception as ex:
-                logger.error('Exception while loading scan %s - %s' % (scan, str(ex)))
-                array_errors.append(scan)
-                dualpol_errors.append(scan)
+        if os.path.exists(npz_path):
+            if force_rendering:
+                arrays = np.load(npz_path)
+            else:
+                logger.info('Rendered arrays already exist for scan %s' % scan)
                 continue
 
-        if os.path.exists(os.path.join(array_dir, scan + ".npy")):
-            logger.info('A npy array already exists for scan %s' % scan)
-        else:
-            try:
-                data, elevs, y, x = radar2mat(radar, **array_render_config)
-                data = np.concatenate(tuple([data[attr] for attr in array_attributes]))
-                with open(os.path.join(array_dir, scan+".npy"), "wb") as f:
-                    np.save(f, data)
-                logger.info('Rendered a npy array from scan %s' % scan)
-            except Exception as ex:
-                logger.error('Exception while rendering a npy array from scan %s - %s' % (scan, str(ex)))
-                array_errors.append(scan)
+        try:
+            radar = pyart.io.read_nexrad_archive(scan_file)
+            logger.info('Loaded scan %s' % scan)
+        except Exception as ex:
+            logger.error('Exception while loading scan %s - %s' % (scan, str(ex)))
+            array_errors.append(scan)
+            dualpol_errors.append(scan)
+            continue
 
-        if os.path.exists(os.path.join(dualpol_dir, scan+"_dualpol.npy")):
-            logger.info('A dual npy array already exists for scan %s' % scan)
-        else:
-            try:
-                data, elevs, y, x = radar2mat(radar, **dualpol_render_config)
-                data = np.concatenate(tuple([data[attr] for attr in dualpol_attributes]))
-                with open(os.path.join(dualpol_dir, scan+"_dualpol.npy"), "wb") as f:
-                    np.save(f, data)
-                logger.info('Rendered a dualpol npy array from scan %s' % scan)
-            except Exception as ex:
-                logger.error('Exception while rendering a dualpol npy array from scan %s - %s' % (scan, str(ex)))
-                dualpol_errors.append(scan)
+        try:
+            data, _, _, y, x = radar2mat(radar, **array_render_config)
+            logger.info('Rendered a npy array from scan %s' % scan)
+            if data.shape != (len(array_render_config["fields"]), len(array_render_config["elevs"]),
+                              array_render_config["dim"], array_render_config["dim"]):
+                logger.info(f"  Unexpectedly, its shape is {data.shape}.")
+            arrays["array"] = data
+        except Exception as ex:
+            logger.error('Exception while rendering a npy array from scan %s - %s' % (scan, str(ex)))
+            array_errors.append(scan)
+
+        try:
+            data, _, _, y, x = radar2mat(radar, **dualpol_render_config)
+            logger.info('Rendered a dualpol npy array from scan %s' % scan)
+            if data.shape != (len(dualpol_render_config["fields"]), len(dualpol_render_config["elevs"]),
+                              dualpol_render_config["dim"], dualpol_render_config["dim"]):
+                logger.info(f"  Unexpectedly, its shape is {data.shape}.")
+            arrays["dualpol_array"] = data
+        except Exception as ex:
+            logger.error('Exception while rendering a dualpol npy array from scan %s - %s' % (scan, str(ex)))
+            dualpol_errors.append(scan)
+
+        if len(arrays) > 0:
+            os.makedirs(os.path.join(array_dir, f"{year}/{month}/{date}/{station}"), exist_ok=True)
+            np.savez_compressed(npz_path, **arrays)
 
     if len(array_errors) > 0:
         with open(array_error_log_path, 'a+') as f:

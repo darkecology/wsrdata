@@ -1,202 +1,110 @@
 # wsrdata
 Weather surveillance radar archives hold detailed information about biological phenomena in the atmosphere.
-Given radar scans and specifications, this repository prepares datasets for training and evaluating 
+Given radar scan lists, annotations, and specifications, this repository prepares datasets for training and evaluating 
 machine learning models for detecting and tracking communal bird roosts. 
 
 ### Under Construction
-- Check sampled visualization of scaled bboxes, available at both
-    - doppler:/scratch2/wenlongzhao/roosts2021/libs/wsrdata/datasets/roosts-v1.0.0-official/visualization
-    - https://drive.google.com/drive/folders/10T2lIntArAd-X1MsvNKU1_0gYobIlJYl?usp=sharing
-- Rendering
-    - failure cases
-    - seemingly empty channels in visualization
-        - roosts-v1.0.0-official/visualization, see google drive link above, e.g. KLIX20070330_114649...
-        - roosts-v0.1.0-official/visualization, e.g. KOKX20130721...
-- release v1.0.0: json + what?
-- json to csv
+- black background for visualization
+- check shapes of rendered arrays, remove scans with rendering exceptions from splits
+- install the dataset to Detectron2
+- csv for the web interface: `tools/json_to_csv.py`
+- more functionality for the API; refer to [COCO API](https://github.com/cocodataset/cocoapi)
+- maybe [HDF5](https://docs.h5py.org/en/stable/quick.html) to store arrays
 - probably not an issue but need to check: annotation file names with .Z ending instead of .gz
 
-### Overview
-- **datasets** is a directory reserved for json files created by this repository 
-to define datasets in the modified [COCO format](https://cocodataset.org/#format-data) demonstrated below
-and visualization.
-We use 0-based indexing for all ids; None, empty lists, empty strings, etc to indicate "not applicable".
-    ```angular2
-    {
-        "info":                   info,
-        "license":                [license],
-        "scans":                  {"train": [scan], "val": [scan], "test": [scan]},
-    }
-  
-    info = {
-        "description":              "A roost dataset with annotations.",
-        "comments":                 "Design choices and technical details can be commented here.",
-        "url":                      "",
-        "dataset_version":          "v0.0.1",
-        "split_version":            "v0.0.1",
-        "annotation_version":       "v0.0.1",
-        "user_model_version":       "v0.0.1_hardEM200000",
-        "date_created":             "yyyy/mm/dd",
-        "array_version":            "v0.0.1",
-        "array_channel_indices":    {"reflectivity":      {0.5: 0,
-                                                           1.5: 1,
-                                                           ...},
-                                     "velocity":          {0.5: 5,
-                                                           1.5: 6,
-                                                           ...},
-                                     "spectrum_width":    {0.5: 10,
-                                                           1.5: 11,
-                                                           ...}},
-        "array_shape":              [15, 600, 600],
-        "array_render_config":      render_config,
-        "dualpol_version":          "v0.0.1",
-        "dualpol_channel_indices":  {"differential_reflectivity":   {"0.5": 0,
-                                                                     "1.5": 1,
-                                                                     ...},
-                                     "cross_correlation_ratio":     {"0.5": 5,
-                                                                     "1.5": 6,
-                                                                     ...},
-                                     "differential_phase":          {"0.5": 10,
-                                                                     "1.5": 11,
-                                                                     ...}},
-        "dualpol_shape":            [15, 600, 600],
-        "dualpol_render_config":    render_config,
-        "categories":               ["roost", "rain", ...],
-        "bbox_mode":                "XYWH",
-        "bbox_scaling_factors":     {..., "sheldon-KDOX": 0.6469252517936639, ...}
-    }
-  
-    render_config = {
-        "fields":            ["reflectivity", "velocity", ...],
-        "coords":            "polar"/"cartesian",
-        "r_min":             2125.0,     # default: first range bin of WSR-88D
-        "r_max":             150000.0,   # default: 459875.0, last range bin
-        "r_res":             250,        # default: super-res gate spacing
-        "az_res":            0.5,        # default: super-res azimuth resolution
-        "dim":               600,        # num pixels on a side in Cartesian rendering
-        "sweeps":            None,
-        "elevs":             [0.1, 1.5, 2.5, 3.5, 4.5],
-        "use_ground_range":  True,
-        "interp_method":     "nearest"
-    }
-  
-    license = {
-        "id":     int,
-        "name":   str,
-        "url":    str,
-    }
-  
-    scan = {
-        "scan_id":                int,
-        "scan":                   str,    # scan name
-        "minutes_from_sunrise":   int,    # None for unknown, negative for before sunrise
-        "array_path":             str,
-        "array_license_id":       int,
-        "dualpol_path":           str,
-        "dualpol_license_id":     int,
-        "annotations":            [annotation],
-    }
-    
-    annotation = {
-        "annotation_id":          int,    # among all annotations of all scans
-        "scan_id":                int,
-        "sequence_id":            int,    # indices for roost tracks
-        "category_id":            int,
-        "x":                      float,  # circle center coordinate in map
-        "y":                      float,
-        "r":                      float,  # circle radius
-        "x_im":                   float,  # circle center coordinate in array
-        "y_im":                   float,
-        "r_im":                   float,  # circle radius normalized to array dim
-        "bbox":                   [x, y, width, height],  # calculated from x_im y_im r_im
-        "bbox_annotator":         str,
-        "segmentation":           [polygon],
-        "segmentation_annotator": str,
-    }
-    ```
-
-- **datasets/roosts-v0.1.0-official** defines a toy dataset as a reference:
-    - **roosts-v0.1.0.json** is a human-readable json generated with line indentation of 4
-    - **visualization** contains scan visualization (with bounding boxes) which can be generated using 
-    **tools/visualization.py** and **tools/visualization.ipynb**
+### Repo Overview
+- **datasets** stores dataset definitions that are prepared by this repository.
+    - **datasets/roosts_v0.0.1_official** defines a toy dataset for reference.
+        - **roosts_v0.0.1.json** is in a modified [COCO format](https://cocodataset.org/#format-data) and
+        human-readable with line indentation of 4. It defines a dataset based on or referring to:
+            1. the scan list **static/scan_lists/v0.0.1/scan_list.txt**, 
+            2. arrays in **static/arrays/v0.0.1**,
+            3. annotations from **static/annotations/v1.0.0/user_annotations.txt**, and
+            4. bounding box scaling factors from
+            **static/user_models/v1.0.0/hardEM200000_user_models_python2.pkl** for alleviating annotator biases.
+        - **roosts_v0.0.1_standard_splits.json** defines a train/test split according to 
+        **static/scan_lists/v0.0.1/v0.0.1_standard_splits/{train,test}.txt** and complements **roosts_v0.0.1.json** 
+        which does not specify splits.
+        - **visualization** contains images that visualize scans with bounding boxes.
+        The images are generated by **tools/visualization.py**.
 
 - **src/wsrdata** implements functions relevant to dataset preparation and analyses:
     - **download_radar_scans.py** downloads radar scans
-    - **render_npy_arrays.py** renders npy arrays from radar scans
+    - **render_npy_arrays.py** renders and saves arrays from radar scans
     - **utils** contains utility/help functions
 
 - **static** contains static files that are inputs to the dataset preparation pipeline or 
-generated during the preparation (see the following Release section more info):
-    - **splits** is for different versions of data splits
-    - **scans** is reserved for downloaded radar scans
+generated during the preparation (see the following Release section for more info):
+    - **scan_lists** is for different versions of scan lists and splits
+    - **scans** is for downloaded radar scans
+    - **arrays** is for different versions of arrays rendered from scans, 
+    each version corresponding to a certain set of rendering configs
     - **annotations** is for different versions of annotations
-        - Note: For dataset v0.1.0, a csv file named **user_annotations.txt** is used as the source of annotations. 
+        - As of 4/20/2021, there is only one set of csv annotations **v1.0.0/user_annotations.txt**. 
         If in the future there is a new input format for annotations, related code including that in 
         step 6 of **tools/prepare_dataset_\*.py** will need to be updated.
-    - **user_models** is for different versions of bounding box scaling factors learned by EM [1]
-    - **arrays** is for different versions of npy arrays rendered from scans according to splits
-    - **arrays_for_dualpol** is for different versions of dualpol npy arrays rendered from scans according to splits
+    - **user_models** is for different versions of bounding box scaling factors learned by 
+    an EM algorithm [1] to alleviate annotator biases
 
-- **tools** contains scripts that are entry points of the data preparation pipeline,
- call functions in **src/wsrdata**, and partially or entirely run the dataset preparation pipeline:
-    - **prepare_dataset_v0.1.0.py** is a modifiable template that, given metadata,
-    download radar scans, render npy arrays, read annotations, and create json files which define datasets
-    - **visualization.py** generates npg images that visualize channels in npy arrays for a list of scans 
-    with annotations from a json file
-    - **visualization.ipynb** can interactively (1) render and visualize a scan and 
-    (2) visualize channels from a npy array with its annotation(s) from a json file
+- **tools** contains scripts to run the data preparation pipeline and visualization:
+    - **prepare_dataset_v0.0.1.py** is a modifiable template that can be configured to
+    download radar scans, render arrays, read annotations, and create json files that define datasets
+    - **visualization.py** generates png images that visualize selected channels in rendered arrays for 
+    a given list of scans with annotations from a designated json file
+    - **visualization.ipynb** can interactively (1) render an array from a scan and visualize it and
+    (2) visualize selected channels from a rendered array with its annotation(s) from a json file
 
 ### Release
 #### datasets
-- **roosts-v0.1.0-official** uses splits v0.1.0, annotations v1.0.0, user_models v1.0.0_hardEM200000,
- arrays v0.1.0, arrays_for_dualpol v0.1.0.
-    - **roosts-v0.1.0-official.json** defines the dataset
-- **roosts-v1.0.0-official** uses splits v1.0.0, annotations v1.0.0, user_models v1.0.0_hardEM200000,
- arrays v1.0.0, arrays_for_dualpol v1.0.0.
+- **roosts_v0.0.1_official** uses arrays v0.0.1, annotations v1.0.0, and user_models v1.0.0_hardEM200000.
+- **roosts_v0.1.0_official** uses arrays v0.1.0, annotations v1.0.0, and user_models v1.0.0_hardEM200000.
 
-#### splits
-- **v0.1.0** involves 3 scans in train.txt and test.txt respectively and 
-can be used to test whether the dataset preparation pipeline is successfully set up.
-- **v0.2.0** is used for deciding which bounding box scaling strategy to use to alleviate annotator biases, and
-is generated by **v0.2.0/pick_scans_to_visualize.py**.
-- **v0.5.0** is the split used in [1] and involves 88972 scans. Scans are randomly split by day-station, 
-i.e. scans from the same day at the same station are all in one of train.txt, val.txt, and test.txt.
-Scans are randomly ordered in the txt files.
-    - **train.txt**: 53600 scans, among which 26895 are in annotation v1.0.0, ~60.24%
-    - **val.txt**: 11658 scans, among which 3796 are in annotation v1.0.0, ~13.10%
-    - **test.txt**: 23714 scans, among which 7711 are in annotation v1.0.0, ~26.65%
-- **v1.0.0** contains the same scans as v0.5.0, with scans ordered in the txt files.
+#### scan_lists
+- **v0.0.1** has 6 scans and can be used to test whether the dataset preparation pipeline is successfully set up.
+    - **v0.0.1_standard_splits** has 3 scans in train.txt and test.txt respectively.
+- **v0.1.0** contains 88972 scans used in [1].
+    - **v0.1.0_subset_for_debugging** is generated by **pick_scans_to_visualize.py** and
+    can be used to visualize and examine a random subset of the dataset by annotation-station.
+    - **v0.1.0_randomly_ordered_splits**, which is used in [1], splits all scans by day-station, i.e. 
+    scans from the same day at the same station. Scans are randomly ordered in the txt files.
+        - **train.txt**: 53600 scans, among which 26895 are in annotation v1.0.0, ~60.24%
+        - **val.txt**: 11658 scans, among which 3796 are in annotation v1.0.0, ~13.10%
+        - **test.txt**: 23714 scans, among which 7711 are in annotation v1.0.0, ~26.65%
+    - **v0.1.0_standard_splits** is the same as the **v0.1.0_random_order**, except that 
+    the scans are alphabetically ordered in the txt files.
+
+#### arrays
+- **v0.0.1** and **v0.1.0**
+    - "array": _{reflectivity, velocity, spectrum_width}_ x _elevations{0.5, 1.5, 2.5, 3.5, 4.5}_ x 600 x 600.
+    - "dualpol": _{differential_reflectivity, cross_correlation_ratio, differential_phase}_ x 
+    _elevations{0.5, 1.5, 2.5, 3.5, 4.5}_ x 600 x 600.
 
 #### annotations
-- Annotation information is collected from a few sources in various formats. It would be nice to establish
-a standard format in the future and standard code in Step 6 of `tools/prepare_dataset_*.py` to load annotations.
-- **v1.0.0** is for annotation sources. This annotation version is listed in the txt file 
-[here](https://www.dropbox.com/s/0j9srf0jt6lc76e/user_annotations.txt?dl=0); notice that the second
-column can end with ".gz" or ".Z". Previous to this repository, annotation information in the txt file
-were processed and paritially saved in *.mat files 
+- **v1.0.0** is a txt file and can be downloaded 
+[here](https://www.dropbox.com/s/0j9srf0jt6lc76e/user_annotations.txt?dl=0).
+Notice that the second column can end with ".gz" or ".Z". 
+Previous to this repository, the list was processed to become *.mat files 
 [here](https://www.dropbox.com/s/eti469m1z4634x4/Annotations.zip?dl=0) and used by [1]. 
-annotator information was also logged 
-[here](https://docs.google.com/spreadsheets/d/1lvEWNSSJsT9WYGgUE3rIkOoy9vU2zHEPTCiVJnRdFaI/edit).
+Refer to [this sheet](https://docs.google.com/spreadsheets/d/1lvEWNSSJsT9WYGgUE3rIkOoy9vU2zHEPTCiVJnRdFaI/edit)
+for annotator information.
+    - _**Important notes:**_ Bounding boxes are in image coordinates, while by default 
+    pywsrlib renders arrays in the geographical direction. We need to either 
+    (1) flip the bounding box y coordinates, or (2) set `ydirection='ij'` when calling
+    `radar2mat` from pywsrlib to render arrays with the row order images (example notebook 
+    [here](https://nbviewer.jupyter.org/github/darkecology/pywsrlib/blob/master/examples/Bounding%20Boxes%20and%20Image%20Coordinates.ipynb)).
+    If the arrays are rendered in the geographical direction, later visualization with `matplotlib`'s `imshow`
+    will require the `origin='lower'` argument.
 
 #### user_models
 - **v1.0.0** can be found [here](https://www.dropbox.com/sh/d3ronsvzr9c0xxq/AAD9fgrk2exRuyWcBjtU7Ea8a?dl=0),
 where the pkl files can be loaded by python 2 but not python 3. User models are bounding box scaling factors learned
 by EM. Consider outputs of Faster RCNN in [1] as ground truth: User factor = biased user annotation / ground truth.
-User factors are currently manually imported to `tools/prepare_dataset_v0.1.0.py`.
+User factors are currently manually imported to `tools/prepare_dataset_v0.0.1.py`.
 
-#### arrays
-- **v0.1.0**: 15x600x600 arrays where the channels are _[reflectivity, velocity, spectrum_width] x 
-elevations [0.5, 1.5, 2.5, 3.5, 4.5]_.
-- **v1.0.0**: same attributes as v0.1.0.
-
-#### arrays_for_dualpol
-- **v0.1.0**: 15x600x600 arrays where the channels are _[differential_reflectivity, cross_correlation_ratio, differential_phase] x 
-elevations [0.5, 1.5, 2.5, 3.5, 4.5]_.
-- **v1.0.0**: same attributes as v0.1.0.
-
+    
 ### Installation
 Create and activate a python 3.6 environment. Check the cuda version at, for example, `/usr/local/cuda`, 
-or potentially by `nvcc -V`. We use cuda 10.1. 
+or potentially by `nvcc -V`. While many versions should workd, we use cuda 10.1. 
 Install a compatible version of [PyTorch](https://pytorch.org/get-started/previous-versions/).
 ```bash
 conda create -n roost2021 python=3.6
@@ -221,13 +129,11 @@ cd wsrdata
 pip install -e .
 ```
 
-[Configure AWS](https://docs.aws.amazon.com/cli/latest/userguide/cli-chap-configure.html) 
+[Configure AWS](https://docs.aws.amazon.com/cli/latest/userguide/cli-chap-configure.html) by
+`aws configure`
 in order to download radar scans. 
 Enter `AWS Access Key ID` and `AWS Secret Access Key` as prompted,
 `us-east-1` for `Default region name`, and nothing for `Default output format`.
-```bash
-aws configure
-```
 Review the updated AWS config.
 ```bash
 vim ~/.aws/credentials
@@ -235,21 +141,24 @@ vim ~/.aws/config
 ```
 
 ### Dataset Preparation
-Let's produce `roosts-v0.1.0.json` to check whether the installation is successful.
-- This repository already includes split v0.1.0 in `static/splits`
-- This repository already includes `static/annotations/v1.0.0/user_annotations.txt` whose source is
-[here](https://www.dropbox.com/s/0j9srf0jt6lc76e/user_annotations.txt?dl=0)
-- `cd` into the `tools` directory and run `python prepare_dataset_v0.1.0.py`
-- The generated `datasets/roosts-v0.1.0.json` should be the same as `datasets/roosts-v0.1.0-official.json` 
-which is provided for reference as part of this repository
+Let's produce `roosts_v0.0.1.json` to check whether the installation is successful.
+- `cd` into the `tools` directory and run `python prepare_dataset_v0.0.1.py`
+- The generated `roosts_v0.0.1.json` and `roosts_v0.0.1_standard_splits.json` under 
+`datasets/roosts_v0.0.1/` should be the same as those under `datasets/roosts_v0.0.1_official/`
+which are provided for reference as part of this repository
 
-To produce a customized dataset, place customized split definitions and annotations under 
-`static/splits` and `static/annotations`. Then modify `prepare_dataset_v0.1.0.py` and run it under `tools`.
+`tools/prepare_dataset_v0.1.0.py` defines a much larger dataset. 
+`tools/prepare_dataset_v0.1.0_help` contains optional helper functions that are useful for accelerating 
+the dataset creation and checking the correctness of the creation process; 
+see the README in that directory for details.
+
+To produce a customized dataset, place customized scan lists, annotations, and user models under
+`static`. Then modify `prepare_dataset_v0.1.0.py` and run it under `tools`.
 
 ### Dataset Visualization
 There are two ways to visualize data.
 1. Run `tools/visualization.ipynb` to interactively (1) render and visualize a scan or 
-    (2) visualize channels from a npy array with its annotations from a json file.
+    (2) visualize channels from an array with its annotations from a json file.
     - Run `pip3 install jupyter` to install jupyter
     - Add the python environment to jupyter: 
         ```bash
@@ -266,7 +175,7 @@ There are two ways to visualize data.
     - Enter `localhost:9998` from a local browser tab to run the jupyter notebook interactively;
       the notebook should be self-explanatory.
 2. `tools/visualization.py`, given a scan list file and a json file, can generate png images that 
-    visualizes channels from npy arrays of the scans with annotations from the json file.
+    visualizes selected channels from arrays rendered from the scans with annotations from the json file.
 
 ### References
 [1] [Detecting and Tracking Communal Bird Roosts in Weather Radar Data.](https://people.cs.umass.edu/~zezhoucheng/roosts/radar-roosts-aaai20.pdf)

@@ -1,3 +1,4 @@
+# The default target_scale_factor is average sheldon factor
 def scale_XYWH_box(bbox, annotator_scale_factor, target_scale_factor=0.7429):
     radius = [bbox[2] / 2, bbox[3] / 2]
     new_radius = [r / annotator_scale_factor * target_scale_factor for r in radius]
