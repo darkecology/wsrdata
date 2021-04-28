@@ -36,7 +36,7 @@ COMMENTS            = "(1) There is no restrictions on radar scans and thus we u
                       "(3) Paths in this json use / instead of \\; this may need to be changes for a different OS."
 URL                 = ""
 DATASET_VERSION     = "v0.1.0" # There can be different train/val/test splits of the dataset denoted as v0.0.1_xxx.
-SPLIT_VERSION       = "v0.1.0_ordered_splits"
+SPLIT_VERSION       = "v0.1.0_standard_splits"
 ANNOTATION_VERSION  = "v1.0.0" # optional -- an empty string indicates a dataset without annotations
 USER_MODEL_VERSION  = "v1.0.0_hardEM200000"
 DATE_CREATED        = "2021/04/20"
@@ -47,8 +47,8 @@ DATASET_LICENSE     = {"url": "http://www.apache.org/licenses/",
 CATEGORIES          = ["roost"]
 DEFAULT_CAT_ID      = 0 # by default, annotations are for CATEGORIES[0] which is "roost" in this template
 OVERWRITE_DATASET   = True # overwrites the previous json file if the specified dataset version already exists
-SKIP_DOWNLOADING    = False # default False; whether to skip all downloading
-SKIP_RENDERING      = False # default False; whether to skip all rendering
+SKIP_DOWNLOADING    = True # default False; whether to skip all downloading
+SKIP_RENDERING      = True # default False; whether to skip all rendering
 FORCE_RENDERING     = False # default False; whether to rerender even if an array npz already exists
 
 SCAN_LIST_PATH      = os.path.join("../static/scan_lists", DATASET_VERSION, "scan_list.txt")

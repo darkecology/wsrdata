@@ -4,7 +4,7 @@ Given radar scan lists, annotations, and specifications, this repository prepare
 machine learning models for detecting and tracking communal bird roosts. 
 
 ### Under Construction
-- rendering exceptions, remove scans with rendering exceptions from splits
+- remove scans with rendering exceptions from splits
 - install the dataset to Detectron2
 - csv for the web interface: `tools/json_to_csv.py`
 - more functionality for the API; refer to [COCO API](https://github.com/cocodataset/cocoapi)
@@ -46,15 +46,14 @@ generated during the preparation (see the following Release section for more inf
 
 - **tools** contains scripts to run the data preparation pipeline and visualization:
     - **prepare_dataset_v0.0.1.py** is a modifiable template that prepares the toy dataset v0.0.1; it
-     downloads radar scans, renders arrays, reads annotations, and creates json files that define the dataset
-    - **prepare_dataset_v0.1.0.py** is configured to prepare dataset v0.1.0
-        - **prepare_dataset_v0.1.0_dl_rd.py** can be launched multiple times to download and render in parallel
-        - **prepare_dataset_v0.1.0_help** contains additional files for accelerating the dataset preparation 
-        (See README.md in this directory)
+     downloads radar scans, renders arrays, reads annotations, and creates json files that define the dataset.
+     See the following Dataset Preperation section for detailed steps.
+    - prepare_dataset_v0.1.0: See **prepare_dataset_v0.1.0_help/README.md** for steps.
     - **visualization.py** generates png images that visualize selected channels in rendered arrays for 
-    a given list of scans with annotations from a designated json file
+    a given list of scans with annotations from a designated json file.
     - **visualization.ipynb** can interactively (1) render an array from a scan and visualize it and
-    (2) visualize selected channels from a rendered array with its annotation(s) from a json file
+    (2) visualize selected channels from a rendered array with its annotation(s) from a json file.
+    - **json_to_csv.py** generates images and csv files for the web interface.
 
 ### Release
 #### datasets
@@ -76,6 +75,9 @@ generated during the preparation (see the following Release section for more inf
     the scans are alphabetically ordered in the txt files.
     - **v0.1.0_standard_splits** is the same as **v0.1.0_ordered_splits** except that scans with rendering 
     errors are removed.
+        - **train.txt**: 53266 scans
+        - **val.txt**: 11599 scans
+        - **test.txt**: 23587 scans
 
 #### arrays
 - **v0.0.1** and **v0.1.0**
@@ -116,7 +118,7 @@ conda activate roost2021
 pip install torch==1.7.1+cu101 torchvision==0.8.2+cu101 torchaudio==0.7.2 -f https://download.pytorch.org/whl/torch_stable.html
 ```
 
-Assume we are under a roost project directory `roosts2021`. Let's create a `libs` directory where
+Assume we are under a roost project directory `roosts`. Let's create a `libs` directory where
 we will install the pywsrlib toolkit and data preparation functions in this repository. 
 ```bash
 mkdir libs
