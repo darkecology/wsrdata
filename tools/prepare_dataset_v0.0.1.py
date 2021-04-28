@@ -1,5 +1,5 @@
 """
-This script runs the data preparation pipeline to create the toy dataset v0.1.
+This script runs the data preparation pipeline to create the toy dataset v0.0.1.
 It can be modified to create customized datasets.
 
 In most cases, changing values for VARIABLEs in Step 1 suffices.
@@ -41,7 +41,7 @@ DATASET_VERSION     = "v0.0.1" # There can be different train/val/test splits of
 SPLIT_VERSION       = "v0.0.1_standard_splits"
 ANNOTATION_VERSION  = "v1.0.0" # optional -- an empty string indicates a dataset without annotations
 USER_MODEL_VERSION  = "v1.0.0_hardEM200000"
-DATE_CREATED        = "2021/04/10"
+DATE_CREATED        = "2021/04/20"
 SCAN_LICENSE        = {"url": "https://creativecommons.org/share-your-work/public-domain/pdm/",
                        "name": "Public Domain Mark"}
 DATASET_LICENSE     = {"url": "http://www.apache.org/licenses/",
@@ -49,16 +49,16 @@ DATASET_LICENSE     = {"url": "http://www.apache.org/licenses/",
 CATEGORIES          = ["roost"]
 DEFAULT_CAT_ID      = 0 # by default, annotations are for CATEGORIES[0] which is "roost" in this template
 OVERWRITE_DATASET   = True # overwrites the previous json file if the specified dataset version already exists
-SKIP_DOWNLOADING    = False
-SKIP_RENDERING      = False
+SKIP_DOWNLOADING    = False # default False; whether to skip all downloading
+SKIP_RENDERING      = False # default False; whether to skip all rendering
+FORCE_RENDERING     = False # default False; whether to rerender even if an array npz already exists
 
 SCAN_LIST_PATH      = os.path.join("../static/scan_lists", DATASET_VERSION, "scan_list.txt")
 SPLIT_PATHS         = {"train": os.path.join("../static/scan_lists", DATASET_VERSION, SPLIT_VERSION, "train.txt"),
                        "test": os.path.join("../static/scan_lists", DATASET_VERSION, SPLIT_VERSION, "test.txt")}
 
-FORCE_RENDERING     = True # rerender even if an array npz already exists
 ARRAY_VERSION       = "v0.0.1" # corresponding to arrays defined by the following lines
-ARRAY_Y_DIRECTION   = "ij"
+ARRAY_Y_DIRECTION   = "xy" # the default radar direction, + is north, row 0 is south
 ARRAY_R_MAX         = 150000.0
 ARRAY_DIM           = 600
 ARRAY_ATTRIBUTES    = ["reflectivity", "velocity", "spectrum_width"]
@@ -268,7 +268,7 @@ if ANNOTATION_VERSION:
                                         TARGET_SCALE_FACTOR)
             new_annotation = {
                 "id":               None, # temporarily set to None
-                "image_id":         None, # temporarily set to None
+                "scan_id":          None, # temporarily set to None
                 "category_id":      DEFAULT_CAT_ID,
                 "sequence_id":      int(annotation[2]),
                 "x":                annotation[11],
@@ -311,7 +311,7 @@ for n, key in enumerate(scans):
             annotation["id"] = annotation_id
             dataset["scans"][scan_id]["annotation_ids"].append(annotation_id)
             annotation_id += 1
-            annotation["image_id"] = scan_id
+            annotation["scan_id"] = scan_id
             dataset["annotations"].append(annotation)
 
     scan_id += 1

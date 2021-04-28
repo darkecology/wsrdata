@@ -17,9 +17,9 @@ annotator_station_pairs = ['Ftian-KOKX', 'William Curran-KDOX', 'andrew-KAMX', '
                            'sheldon-KRTX', 'sheldon-KTBW']
 scans_with_annotations = {pair: [] for pair in annotator_station_pairs}
 
-scans = [scan.strip() for scan in open("../v0.1.0-standard/train.txt", "r").readlines()]
-scans.extend([scan.strip() for scan in open("../v0.1.0-standard/val.txt", "r").readlines()])
-scans.extend([scan.strip() for scan in open("../v0.1.0-standard/test.txt", "r").readlines()])
+scans = [scan.strip() for scan in open("../v0.1.0_standard_splits/train.txt", "r").readlines()]
+scans.extend([scan.strip() for scan in open("../v0.1.0_standard_splits/val.txt", "r").readlines()])
+scans.extend([scan.strip() for scan in open("../v0.1.0_standard_splits/test.txt", "r").readlines()])
 scans = set(scans)
 
 error_scans = set([scan.strip() for scan in open(
@@ -51,33 +51,3 @@ for pair in scans_with_annotations:
         output_scan_list.append(scans_with_annotations[pair][i]+"\n")
     if len(output_scan_list) != 0:
         open(pair+".txt", "w").writelines(output_scan_list)
-
-"""
-Ftian-KOKX has 1913 scans in dataset v0.1.0.
-William Curran-KDOX has 87 scans in dataset v0.1.0.
-andrew-KAMX has 321 scans in dataset v0.1.0.
-Warning: andrew-KHGX has 0 scans in dataset v0.1.0.
-Warning: andrew-KJAX has 0 scans in dataset v0.1.0.
-Warning: andrew-KLCH has 0 scans in dataset v0.1.0.
-andrew-KLIX has 1880 scans in dataset v0.1.0.
-andrew-KMLB has 240 scans in dataset v0.1.0.
-andrew-KTBW has 1830 scans in dataset v0.1.0.
-Warning: andrew-KTLH has 0 scans in dataset v0.1.0.
-Warning: anon-KDOX has 6 scans in dataset v0.1.0.
-anon-KLIX has 64 scans in dataset v0.1.0.
-anon-KTBW has 378 scans in dataset v0.1.0.
-jafer1-KDOX has 62 scans in dataset v0.1.0.
-jafermjj-KDOX has 157 scans in dataset v0.1.0.
-jberger1-KAMX has 337 scans in dataset v0.1.0.
-jberger1-KLIX has 3999 scans in dataset v0.1.0.
-jberger1-KMLB has 11312 scans in dataset v0.1.0.
-jberger1-KTBW has 7986 scans in dataset v0.1.0.
-jpodrat-KLIX has 449 scans in dataset v0.1.0.
-sheldon-KAMX has 200 scans in dataset v0.1.0.
-sheldon-KDOX has 366 scans in dataset v0.1.0.
-sheldon-KLIX has 800 scans in dataset v0.1.0.
-sheldon-KMLB has 436 scans in dataset v0.1.0.
-Warning: sheldon-KOKX has 5 scans in dataset v0.1.0.
-sheldon-KRTX has 189 scans in dataset v0.1.0.
-sheldon-KTBW has 641 scans in dataset v0.1.0.
-"""

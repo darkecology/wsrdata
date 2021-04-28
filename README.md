@@ -4,14 +4,11 @@ Given radar scan lists, annotations, and specifications, this repository prepare
 machine learning models for detecting and tracking communal bird roosts. 
 
 ### Under Construction
-- ydirection in rendering and visualization
-- black background for visualization
-- check shapes of rendered arrays, remove scans with rendering exceptions from splits
+- rendering exceptions, remove scans with rendering exceptions from splits
 - install the dataset to Detectron2
 - csv for the web interface: `tools/json_to_csv.py`
 - more functionality for the API; refer to [COCO API](https://github.com/cocodataset/cocoapi)
 - maybe [HDF5](https://docs.h5py.org/en/stable/quick.html) to store arrays
-- probably not an issue but need to check: annotation file names with .Z ending instead of .gz
 
 ### Repo Overview
 - **datasets** stores dataset definitions that are prepared by this repository.
@@ -48,8 +45,12 @@ generated during the preparation (see the following Release section for more inf
     an EM algorithm [1] to alleviate annotator biases
 
 - **tools** contains scripts to run the data preparation pipeline and visualization:
-    - **prepare_dataset_v0.0.1.py** is a modifiable template that can be configured to
-    download radar scans, render arrays, read annotations, and create json files that define datasets
+    - **prepare_dataset_v0.0.1.py** is a modifiable template that prepares the toy dataset v0.0.1; it
+     downloads radar scans, renders arrays, reads annotations, and creates json files that define the dataset
+    - **prepare_dataset_v0.1.0.py** is configured to prepare dataset v0.1.0
+        - **prepare_dataset_v0.1.0_dl_rd.py** can be launched multiple times to download and render in parallel
+        - **prepare_dataset_v0.1.0_help** contains additional files for accelerating the dataset preparation 
+        (See README.md in this directory)
     - **visualization.py** generates png images that visualize selected channels in rendered arrays for 
     a given list of scans with annotations from a designated json file
     - **visualization.ipynb** can interactively (1) render an array from a scan and visualize it and
@@ -57,8 +58,8 @@ generated during the preparation (see the following Release section for more inf
 
 ### Release
 #### datasets
-- **roosts_v0.0.1_official** uses arrays v0.0.1, annotations v1.0.0, and user_models v1.0.0_hardEM200000.
-- **roosts_v0.1.0_official** uses arrays v0.1.0, annotations v1.0.0, and user_models v1.0.0_hardEM200000.
+- **roosts_v0.0.1** uses arrays v0.0.1, annotations v1.0.0, and user_models v1.0.0_hardEM200000.
+- **roosts_v0.1.0** uses arrays v0.1.0, annotations v1.0.0, and user_models v1.0.0_hardEM200000.
 
 #### scan_lists
 - **v0.0.1** has 6 scans and can be used to test whether the dataset preparation pipeline is successfully set up.
@@ -71,8 +72,10 @@ generated during the preparation (see the following Release section for more inf
         - **train.txt**: 53600 scans, among which 26895 are in annotation v1.0.0, ~60.24%
         - **val.txt**: 11658 scans, among which 3796 are in annotation v1.0.0, ~13.10%
         - **test.txt**: 23714 scans, among which 7711 are in annotation v1.0.0, ~26.65%
-    - **v0.1.0_standard_splits** is the same as the **v0.1.0_random_order**, except that 
+    - **v0.1.0_ordered_splits** is the same as the **v0.1.0_random_order**, except that 
     the scans are alphabetically ordered in the txt files.
+    - **v0.1.0_standard_splits** is the same as **v0.1.0_ordered_splits** except that scans with rendering 
+    errors are removed.
 
 #### arrays
 - **v0.0.1** and **v0.1.0**
