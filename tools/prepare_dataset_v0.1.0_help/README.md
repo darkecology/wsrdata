@@ -7,7 +7,7 @@ into `train_*.txt` and `test_*.txt` under this directory.
 
 Run `tools/prepare_dataset_v0.1.0_dl_rd.py` multiple times for parallel downloading and rendering for the data subsets.
 
-For record, we copy the generated 
+For record, we copy the generated
 `static/arrays/v0.1.0/{rendering.log, array_error_scans.log, dualpol_error_scans.log}` to this directory.
 
 Typically `previous_versions.json` under `static/arrays` will be updated to avoid future version conflicts.

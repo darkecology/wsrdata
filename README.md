@@ -4,11 +4,13 @@ Given radar scan lists, annotations, and specifications, this repository prepare
 machine learning models for detecting and tracking communal bird roosts. 
 
 ### Under Construction
-- remove scans with rendering exceptions from splits
 - install the dataset to Detectron2
 - csv for the web interface: `tools/json_to_csv.py`
 - more functionality for the API; refer to [COCO API](https://github.com/cocodataset/cocoapi)
 - maybe [HDF5](https://docs.h5py.org/en/stable/quick.html) to store arrays
+- pyart rendering [issue](https://github.com/darkecology/wsrdata/issues/1);
+as of now, need to manually make sure the split json files do not contain scans with rendering exceptions since
+some array paths in the json may be invalid due to those exceptions
 
 ### Repo Overview
 - **datasets** stores dataset definitions that are prepared by this repository.
@@ -28,7 +30,7 @@ machine learning models for detecting and tracking communal bird roosts.
 
 - **src/wsrdata** implements functions relevant to dataset preparation and analyses:
     - **download_radar_scans.py** downloads radar scans
-    - **render_npy_arrays.py** renders and saves arrays from radar scans
+    - **render_npy_arrays.py** uses pywsrlib to render arrays from radar scans and save them
     - **utils** contains utility/help functions
 
 - **static** contains static files that are inputs to the dataset preparation pipeline or 
@@ -53,7 +55,20 @@ generated during the preparation (see the following Release section for more inf
     a given list of scans with annotations from a designated json file.
     - **visualization.ipynb** can interactively (1) render an array from a scan and visualize it and
     (2) visualize selected channels from a rendered array with its annotation(s) from a json file.
-    - **json_to_csv.py** generates images and csv files for the web interface.
+    - **generate_img_for_ui** generates images for the web interface.
+    - **json_to_csv.py** generates csv files from json (for the web interface).
+
+- _**Important notes:**_
+    - By default pywsrlib renders arrays in the geographical direction;
+    i.e. when calling `radar2mat`, `ydirection='xy'` by default.
+    In the rendered array, y is the first dimension and x the second.
+    Large y indicates North and large x indicates East. For visualization using matplotlib's `imshow`, 
+    we need to set `origin='lower'` in order that North is the top of the image.
+    When saving images from array channels for UI, we manually flip the y axis of the arrays and annotations.
+    - As of now this repo renders arrays with `ydirection='xy'`.
+    - Although not the case in this repo, if `ydirection='ij'`, large y will indicate South.
+    Then for visualization using matplotlib's `imshow`, 
+    the default `origin=None` will correspond to images with North as the top.    
 
 ### Release
 #### datasets
@@ -93,13 +108,6 @@ Previous to this repository, the list was processed to become *.mat files
 [here](https://www.dropbox.com/s/eti469m1z4634x4/Annotations.zip?dl=0) and used by [1]. 
 Refer to [this sheet](https://docs.google.com/spreadsheets/d/1lvEWNSSJsT9WYGgUE3rIkOoy9vU2zHEPTCiVJnRdFaI/edit)
 for annotator information.
-    - _**Important notes:**_ Bounding boxes are in image coordinates, while by default 
-    pywsrlib renders arrays in the geographical direction. We need to either 
-    (1) flip the bounding box y coordinates, or (2) set `ydirection='ij'` when calling
-    `radar2mat` from pywsrlib to render arrays with the row order images (example notebook 
-    [here](https://nbviewer.jupyter.org/github/darkecology/pywsrlib/blob/master/examples/Bounding%20Boxes%20and%20Image%20Coordinates.ipynb)).
-    If the arrays are rendered in the geographical direction, later visualization with `matplotlib`'s `imshow`
-    will require the `origin='lower'` argument.
 
 #### user_models
 - **v1.0.0** can be found [here](https://www.dropbox.com/sh/d3ronsvzr9c0xxq/AAD9fgrk2exRuyWcBjtU7Ea8a?dl=0),

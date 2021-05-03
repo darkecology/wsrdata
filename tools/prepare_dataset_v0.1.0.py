@@ -261,8 +261,9 @@ if ANNOTATION_VERSION:
             y_im = (annotation[12] + ARRAY_RENDER_CONFIG["r_max"]) * ARRAY_DIM / (2 * ARRAY_RENDER_CONFIG["r_max"])
             r_im = annotation[13] * ARRAY_DIM / (2 * ARRAY_RENDER_CONFIG["r_max"])
             scaled_box = scale_XYWH_box([int(x_im - r_im), int(y_im - r_im),
-                                         int(x_im + r_im) - int(x_im - r_im) + 1,
-                                         int(y_im + r_im) - int(y_im - r_im) + 1],
+                                         int(x_im + r_im) - int(x_im - r_im),
+                                         int(y_im + r_im) - int(y_im - r_im)],
+                                        ARRAY_DIM, # this scaling func ensures bboxes within the image
                                         BBOX_SCALING_FACTORS[annotation[14]],
                                         TARGET_SCALE_FACTOR)
             new_annotation = {
@@ -272,10 +273,10 @@ if ANNOTATION_VERSION:
                 "sequence_id":      int(annotation[2]),
                 "x":                annotation[11],
                 "y":                annotation[12],
-                "r":                annotation[13],
+                "r":                annotation[13] / BBOX_SCALING_FACTORS[annotation[14]] * TARGET_SCALE_FACTOR,
                 "x_im":             x_im,
                 "y_im":             y_im,
-                "r_im":             r_im,
+                "r_im":             r_im / BBOX_SCALING_FACTORS[annotation[14]] * TARGET_SCALE_FACTOR,
                 "bbox":             scaled_box,
                 # "bbox_annotator":   annotation[14],
                 "bbox_area":        scaled_box[2] * scaled_box[3],

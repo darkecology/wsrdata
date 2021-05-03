@@ -8,7 +8,8 @@ import matplotlib.colors as pltc
 OUTPUT_DIR = None # if not None, save all figures directly under this
 OUTPUT_ROOT = None # if not None, create subdirectories {year}/{month}/{date}/{station} to save figures
 
-# define which scans to visualize, which json to be the source of annotations
+# define which channels for which scans to visualize, which json to be the source of annotations
+CHANNELS = [("reflectivity", 0.5), ("reflectivity", 1.5), ("velocity", 0.5)]
 # (1) check if visualization works properly for the toy dataset version
 SCAN_LIST_PATHS = {"all": os.path.join("../static/scan_lists/v0.0.1/scan_list.txt")}
 JSON_PATH = "../datasets/roosts_v0.0.1/roosts_v0.0.1.json"
@@ -23,7 +24,7 @@ OUTPUT_DIR = "../datasets/roosts_v0.0.1/visualization"
 #                 'sheldon-KRTX', 'sheldon-KTBW']
 #                    if os.path.exists(f"../static/scan_lists/v0.1.0/v0.1.0_subset_for_debugging/{pair}.txt")}
 # JSON_PATH = "../datasets/roosts_v0.1.0/roosts_v0.1.0.json"
-# OUTPUT_ROOT = "../datasets/roosts_v0.1.0/visualization"
+# OUTPUT_DIR = "../datasets/roosts_v0.1.0/visualization"
 
 # visualization settings
 COLOR_ARRAY = [
@@ -61,7 +62,7 @@ for scan_list in SCAN_LIST_PATHS:
         array = np.load(os.path.join(dataset["info"]["array_dir"], scan["array_path"]))["array"]
 
         fig, axs = plt.subplots(1, 3, figsize=(21, 7), constrained_layout=True)
-        for i, (attr, elev) in enumerate([("reflectivity", 0.5), ("reflectivity", 1.5), ("velocity", 0.5)]):
+        for i, (attr, elev) in enumerate(CHANNELS):
             subplt = axs[i]
             subplt.axis('off')
             subplt.set_title(f"{attr}, elev: {elev}", fontsize=18)
@@ -92,15 +93,19 @@ for scan_list in SCAN_LIST_PATHS:
                             bbox=dict(facecolor='white', alpha=0), fontsize=14, color=COLOR_ARRAY[1])
 
         # save
-        if OUTPUT_DIR is not None:
-            os.makedirs(OUTPUT_DIR, exist_ok=True)
-            fig.savefig(os.path.join(OUTPUT_DIR, SCAN + ".png"), bbox_inches="tight")
-        else:
+        if OUTPUT_DIR is not None and len(SCAN_LIST_PATHS) == 1:
+            output_dir = OUTPUT_DIR
+        elif OUTPUT_DIR is not None and len(SCAN_LIST_PATHS) > 1:
+            output_dir = os.path.join(OUTPUT_DIR, scan_list)
+        elif OUTPUT_ROOT is not None:
             station = SCAN[0:4]
             year = SCAN[4:8]
             month = SCAN[8:10]
             date = SCAN[10:12]
-            os.makedirs(os.path.join(OUTPUT_ROOT, f"{year}/{month}/{date}/{station}"), exist_ok=True)
-            fig.savefig(os.path.join(OUTPUT_ROOT, f"{year}/{month}/{date}/{station}", SCAN + ".png"),
-                        bbox_inches="tight")
+            output_dir = os.path.join(OUTPUT_ROOT, f"{year}/{month}/{date}/{station}")
+        else:
+            print("No output directory defined.")
+            raise
+        os.makedirs(output_dir, exist_ok=True)
+        fig.savefig(os.path.join(output_dir, SCAN + ".png"), bbox_inches="tight")
         plt.close(fig)
