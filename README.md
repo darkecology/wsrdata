@@ -5,7 +5,6 @@ machine learning models for detecting and tracking communal bird roosts.
 
 ### Under Construction
 - install the dataset to Detectron2
-- csv for the web interface: `tools/json_to_csv.py`
 - more functionality for the API; refer to [COCO API](https://github.com/cocodataset/cocoapi)
 - maybe [HDF5](https://docs.h5py.org/en/stable/quick.html) to store arrays
 - pyart rendering [issue](https://github.com/darkecology/wsrdata/issues/1);

@@ -14,6 +14,7 @@ scans = set(scans)
 
 with open(DATASET_JSON_PATH, "r") as f:
     dataset = json.load(f)
+    max_y = dataset["info"]["array_shape"][0] - 1
 
 os.makedirs(OUTPUT_DIR, exist_ok=True)
 outputs = {}
@@ -24,10 +25,10 @@ for annotation in dataset["annotations"]:
         filename = dataset["scans"][annotation["scan_id"]]["key"]
         from_sunrise = dataset["scans"][annotation["scan_id"]]["minutes_from_sunrise"]
         x = annotation["x_im"]
-        y = annotation["y_im"]
+        y = max_y - annotation["y_im"]
         r = annotation["r_im"]
         lon = annotation["x"]
-        lat = annotation["y"]
+        lat = -annotation["y"]
         radius = annotation["r"]
 
         station_year = filename[:8]
