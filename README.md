@@ -56,14 +56,17 @@ generated during the preparation (see the following Release section for more inf
 - _**Important notes:**_
     - By default pywsrlib renders arrays in the geographical direction;
     i.e. when calling `radar2mat`, `ydirection='xy'` by default.
-    In the rendered array, y is the first dimension and x the second.
-    Large y indicates North and large x indicates East. For visualization using matplotlib's `imshow`, 
+    In such rendered arrays, y is the first dimension and x the second.
+    Large y indicates North and large x indicates East. 
+    As of now this repo renders arrays with `ydirection='xy'`. 
+    To visualize the array channels using matplotlib's `pyplot.imshow`, 
     we need to set `origin='lower'` in order that North is the top of the image.
-    When saving images from array channels for UI, we manually flip the y axis of the arrays and annotations.
-    - As of now this repo renders arrays with `ydirection='xy'`.
+    Before saving images of array channels for UI using matplotlib's `image.imsave`, 
+    we need to manually flip the y axis of the arrays and annotations in order that North is the top of the image.
     - Although not the case in this repo, if `ydirection='ij'`, large y will indicate South.
-    Then for visualization using matplotlib's `imshow`, 
-    the default `origin=None` will correspond to images with North as the top.    
+    Flip the y axis of annotations so that they correspond to the rendered arrays.
+    To visualize the array channels using matplotlib's `pyplot.imshow`, 
+    the default `origin=None` will yield images with North as the top.
 
 ### Release
 #### datasets
