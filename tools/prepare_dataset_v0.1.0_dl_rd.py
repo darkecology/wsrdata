@@ -33,7 +33,8 @@ DATASET_LICENSE     = {"url": "http://www.apache.org/licenses/",
                        "name": "Apache License 2.0"}
 CATEGORIES          = ["roost"]
 DEFAULT_CAT_ID      = 0 # by default, annotations are for CATEGORIES[0] which is "roost" in this template
-OVERWRITE_DATASET   = True # overwrites the previous json file if the specified dataset version already exists
+OVERWRITE_DATASET   = False # default False; whether to overwrite the previous json file for annotations (if it exists)
+OVERWRITE_SPLITS    = False # default False; whether to overwrite the previous json file for splits (if it exists)
 SKIP_DOWNLOADING    = False # default False; whether to skip all downloading
 SKIP_RENDERING      = False # default False; whether to skip all rendering
 FORCE_RENDERING     = True # default False; whether to rerender even if an array npz already exists
@@ -124,10 +125,17 @@ DATASET_DIR                 = f"../datasets/roosts_{DATASET_VERSION}"
 
 
 ############### Step 2: check for conflicts, update logs, create directories ###############
-# make sure DATASET_VERSION is not empty and does not conflict with existing versions, create a directory for it
+# make sure DATASET_VERSION is not empty, check its previous existence, create a directory for it
 assert DATASET_VERSION
-if not os.path.exists(DATASET_DIR): os.mkdir(DATASET_DIR)
-if not OVERWRITE_DATASET: assert len(os.listdir(DATASET_DIR)) == 0
+if not os.path.exists(DATASET_DIR):
+    os.mkdir(DATASET_DIR)
+else:
+    if os.path.exists(f"{DATASET_DIR}/roosts_{DATASET_VERSION}.json") and OVERWRITE_DATASET:
+        print("Will overwrite the existing json file for dataset definition. "
+              "Please manually clean or overwrite old visualization data as needed.")
+    if os.path.exists(f"{DATASET_DIR}/roosts_{SPLIT_VERSION}.json") and OVERWRITE_SPLITS:
+        print("Will overwrite the existing json file for splits.")
+
 # make sure SCAN_LIST_PATH, SCAN_ROOT_DIR, etc exist
 assert os.path.exists(SCAN_LIST_PATH)
 for split in SPLIT_PATHS: assert os.path.exists(SPLIT_PATHS[split])
@@ -166,14 +174,14 @@ if not os.path.exists(ARRAY_DIR): os.mkdir(ARRAY_DIR)
 
 
 ############### Step 4: Download radar scans ###############
-# if not SKIP_DOWNLOADING:
-#     print("Downloading scans...")
-#     download_errors = download_by_scan_list(
-#         SCAN_LIST_PATH, SCAN_DIR,
-#         os.path.join(SCAN_LOG_DIR, f"{DATASET_VERSION}.log"),
-#         os.path.join(SCAN_LOG_NOT_S3_DIR, f"{DATASET_VERSION}.log"),
-#         os.path.join(SCAN_LOG_ERROR_SCANS_DIR, f"{DATASET_VERSION}.log")
-#     )
+if not SKIP_DOWNLOADING:
+    print("Downloading scans...")
+    download_errors = download_by_scan_list(
+        SCAN_LIST_PATH, SCAN_DIR,
+        os.path.join(SCAN_LOG_DIR, f"{DATASET_VERSION}.log"),
+        os.path.join(SCAN_LOG_NOT_S3_DIR, f"{DATASET_VERSION}.log"),
+        os.path.join(SCAN_LOG_ERROR_SCANS_DIR, f"{DATASET_VERSION}.log")
+    )
 
 
 ############### Step 5: Render arrays from radar scans ###############

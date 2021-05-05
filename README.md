@@ -93,6 +93,7 @@ generated during the preparation (see the following Release section for more inf
         - **train.txt**: 53266 scans
         - **val.txt**: 11599 scans
         - **test.txt**: 23587 scans
+    - **v0.1.0_KDOX_splits** is a subset of **v0.1.0_standard_splits** with only KDOX scans.
 
 #### arrays
 - **v0.0.1** and **v0.1.0**

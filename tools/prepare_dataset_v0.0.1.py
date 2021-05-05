@@ -48,7 +48,8 @@ DATASET_LICENSE     = {"url": "http://www.apache.org/licenses/",
                        "name": "Apache License 2.0"}
 CATEGORIES          = ["roost"]
 DEFAULT_CAT_ID      = 0 # by default, annotations are for CATEGORIES[0] which is "roost" in this template
-OVERWRITE_DATASET   = True # overwrites the previous json file if the specified dataset version already exists
+OVERWRITE_DATASET   = False # default False; whether to overwrite the previous json file for annotations (if it exists)
+OVERWRITE_SPLITS    = False # default False; whether to overwrite the previous json file for splits (if it exists)
 SKIP_DOWNLOADING    = False # default False; whether to skip all downloading
 SKIP_RENDERING      = False # default False; whether to skip all rendering
 FORCE_RENDERING     = False # default False; whether to rerender even if an array npz already exists
@@ -137,10 +138,17 @@ DATASET_DIR                 = f"../datasets/roosts_{DATASET_VERSION}"
 
 
 ############### Step 2: check for conflicts, update logs, create directories ###############
-# make sure DATASET_VERSION is not empty and does not conflict with existing versions, create a directory for it
+# make sure DATASET_VERSION is not empty, check its previous existence, create a directory for it
 assert DATASET_VERSION
-if not os.path.exists(DATASET_DIR): os.mkdir(DATASET_DIR)
-if not OVERWRITE_DATASET: assert len(os.listdir(DATASET_DIR)) == 0
+if not os.path.exists(DATASET_DIR):
+    os.mkdir(DATASET_DIR)
+else:
+    if os.path.exists(f"{DATASET_DIR}/roosts_{DATASET_VERSION}.json") and OVERWRITE_DATASET:
+        print("Will overwrite the existing json file for dataset definition. "
+              "Please manually clean or overwrite old visualization data as needed.")
+    if os.path.exists(f"{DATASET_DIR}/roosts_{SPLIT_VERSION}.json") and OVERWRITE_SPLITS:
+        print("Will overwrite the existing json file for splits.")
+
 # make sure SCAN_LIST_PATH, SCAN_ROOT_DIR, etc exist
 assert os.path.exists(SCAN_LIST_PATH)
 for split in SPLIT_PATHS: assert os.path.exists(SPLIT_PATHS[split])
@@ -235,100 +243,108 @@ if not SKIP_RENDERING:
 
 
 ############### Step 6: Populate the dataset definition and save to json ###############
-print("Populating the dataset definition...")
+create_annotation_json = False
+if not os.path.exists(f"{DATASET_DIR}/roosts_{DATASET_VERSION}.json") or OVERWRITE_DATASET:
+    create_annotation_json = True
+    print("Populating the dataset definition...")
 
-# Load annotations
-if ANNOTATION_VERSION:
-    print("Loading annotations....")
+    # Load annotations
+    if ANNOTATION_VERSION:
+        print("Loading annotations....")
 
-    # annotations ordered alphabetically by scan, then by date, then by track, but not by second
-    # fields are: 0 scan_id (different than ours), 1 filename, 2 sequence_id, 3 station, 4 year, 5 month,
-    #         6 day, 7 hour, 8 minute, 9 second, 10 minutes_from_sunrise, 11 x, 12 y, 13 r, 14 username
-    annotations = [annotation.strip().split(",") for annotation in
-                   open(os.path.join(ANNOTATION_DIR, "user_annotations.txt"), "r").readlines()[1:]]
-    # Preparation: load annotations into a dictionary where scan names are keys
-    annotation_dict = {}
-    minutes_from_sunrise_dict = {}
-    unknown_scaling_factors = set()
-    for annotation in annotations:
-        annotation[11] = float(annotation[11])
-        annotation[12] = float(annotation[12])
-        annotation[13] = float(annotation[13])
-        if annotation[14] not in BBOX_SCALING_FACTORS:
-            # ignore annotation if no user scaling factor learned for the annotation-station pair
-            unknown_scaling_factors.add(annotation[14])
-        else:
-            x_im = (annotation[11] + ARRAY_RENDER_CONFIG["r_max"]) * ARRAY_DIM / (2 * ARRAY_RENDER_CONFIG["r_max"])
-            y_im = (annotation[12] + ARRAY_RENDER_CONFIG["r_max"]) * ARRAY_DIM / (2 * ARRAY_RENDER_CONFIG["r_max"])
-            r_im = annotation[13] * ARRAY_DIM / (2 * ARRAY_RENDER_CONFIG["r_max"])
-            scaled_box = scale_XYWH_box([int(x_im - r_im), int(y_im - r_im),
-                                         int(x_im + r_im) - int(x_im - r_im),
-                                         int(y_im + r_im) - int(y_im - r_im)],
-                                        ARRAY_DIM, # this scaling func ensures bboxes within the image
-                                        BBOX_SCALING_FACTORS[annotation[14]],
-                                        TARGET_SCALE_FACTOR)
-            new_annotation = {
-                "id":               None, # temporarily set to None
-                "scan_id":          None, # temporarily set to None
-                "category_id":      DEFAULT_CAT_ID,
-                "sequence_id":      int(annotation[2]),
-                "x":                annotation[11],
-                "y":                annotation[12],
-                "r":                annotation[13] / BBOX_SCALING_FACTORS[annotation[14]] * TARGET_SCALE_FACTOR,
-                "x_im":             x_im,
-                "y_im":             y_im,
-                "r_im":             r_im / BBOX_SCALING_FACTORS[annotation[14]] * TARGET_SCALE_FACTOR,
-                "bbox":             scaled_box,
-                # "bbox_annotator":   annotation[14],
-                "bbox_area":        scaled_box[2] * scaled_box[3],
-            }
-            if annotation[1].split(".")[0] in annotation_dict:
-                annotation_dict[annotation[1].split(".")[0]].append(new_annotation)
+        # annotations ordered alphabetically by scan, then by date, then by track, but not by second
+        # fields are: 0 scan_id (different than ours), 1 filename, 2 sequence_id, 3 station, 4 year, 5 month,
+        #         6 day, 7 hour, 8 minute, 9 second, 10 minutes_from_sunrise, 11 x, 12 y, 13 r, 14 username
+        annotations = [annotation.strip().split(",") for annotation in
+                       open(os.path.join(ANNOTATION_DIR, "user_annotations.txt"), "r").readlines()[1:]]
+        # Preparation: load annotations into a dictionary where scan names are keys
+        annotation_dict = {}
+        minutes_from_sunrise_dict = {}
+        unknown_scaling_factors = set()
+        for annotation in annotations:
+            annotation[11] = float(annotation[11])
+            annotation[12] = float(annotation[12])
+            annotation[13] = float(annotation[13])
+            if annotation[14] not in BBOX_SCALING_FACTORS:
+                # ignore annotation if no user scaling factor learned for the annotation-station pair
+                unknown_scaling_factors.add(annotation[14])
             else:
-                annotation_dict[annotation[1].split(".")[0]] = [new_annotation]
-            minutes_from_sunrise_dict[annotation[1].split(".")[0]] = int(annotation[10])
-    print(f"Unknown user models / bbox scaling factors for {unknown_scaling_factors} but "
-          f"fine as long as the train/val/test splits does not include these user-station pairs.")
+                x_im = (annotation[11] + ARRAY_RENDER_CONFIG["r_max"]) * ARRAY_DIM / (2 * ARRAY_RENDER_CONFIG["r_max"])
+                y_im = (annotation[12] + ARRAY_RENDER_CONFIG["r_max"]) * ARRAY_DIM / (2 * ARRAY_RENDER_CONFIG["r_max"])
+                r_im = annotation[13] * ARRAY_DIM / (2 * ARRAY_RENDER_CONFIG["r_max"])
+                scaled_box = scale_XYWH_box([int(x_im - r_im), int(y_im - r_im),
+                                             int(x_im + r_im) - int(x_im - r_im),
+                                             int(y_im + r_im) - int(y_im - r_im)],
+                                            ARRAY_DIM, # this scaling func ensures bboxes within the image
+                                            BBOX_SCALING_FACTORS[annotation[14]],
+                                            TARGET_SCALE_FACTOR)
+                new_annotation = {
+                    "id":               None, # temporarily set to None
+                    "scan_id":          None, # temporarily set to None
+                    "category_id":      DEFAULT_CAT_ID,
+                    "sequence_id":      int(annotation[2]),
+                    "x":                annotation[11],
+                    "y":                annotation[12],
+                    "r":                annotation[13] / BBOX_SCALING_FACTORS[annotation[14]] * TARGET_SCALE_FACTOR,
+                    "x_im":             x_im,
+                    "y_im":             y_im,
+                    "r_im":             r_im / BBOX_SCALING_FACTORS[annotation[14]] * TARGET_SCALE_FACTOR,
+                    "bbox":             scaled_box,
+                    # "bbox_annotator":   annotation[14],
+                    "bbox_area":        scaled_box[2] * scaled_box[3],
+                }
+                if annotation[1].split(".")[0] in annotation_dict:
+                    annotation_dict[annotation[1].split(".")[0]].append(new_annotation)
+                else:
+                    annotation_dict[annotation[1].split(".")[0]] = [new_annotation]
+                minutes_from_sunrise_dict[annotation[1].split(".")[0]] = int(annotation[10])
+        print(f"Unknown user models / bbox scaling factors for {unknown_scaling_factors} but "
+              f"fine as long as the train/val/test splits does not include these user-station pairs.")
 
-# Load scan names and populate the dataset definition
-print("Populating the dataset definition...")
-scans = [scan.strip() for scan in open(SCAN_LIST_PATH, "r").readlines()]
-scan_id = 0
-scan_key_to_scan_id = {}
-annotation_id = 0
-for n, key in enumerate(scans):
-    # add array to dataset
-    dataset["scans"].append({
-        "id":                   scan_id,
-        "key":                  key,
-        "minutes_from_sunrise": minutes_from_sunrise_dict[key] if key in minutes_from_sunrise_dict else None,
-        "array_path":           f"{key[4:8]}/{key[8:10]}/{key[10:12]}/{key[0:4]}/{key}.npz",
-        "annotation_ids":       []
-    })
-    scan_key_to_scan_id[key] = scan_id
+    # Load scan names and populate the dataset definition
+    print("Populating the dataset definition...")
+    scans = [scan.strip() for scan in open(SCAN_LIST_PATH, "r").readlines()]
+    scan_id = 0
+    annotation_id = 0
+    for n, key in enumerate(scans):
+        # add array to dataset
+        dataset["scans"].append({
+            "id":                   scan_id,
+            "key":                  key,
+            "minutes_from_sunrise": minutes_from_sunrise_dict[key] if key in minutes_from_sunrise_dict else None,
+            "array_path":           f"{key[4:8]}/{key[8:10]}/{key[10:12]}/{key[0:4]}/{key}.npz",
+            "annotation_ids":       []
+        })
 
-    if ANNOTATION_VERSION and key in annotation_dict:
-        for annotation in annotation_dict[key]:
-            annotation["id"] = annotation_id
-            dataset["scans"][scan_id]["annotation_ids"].append(annotation_id)
-            annotation_id += 1
-            annotation["scan_id"] = scan_id
-            dataset["annotations"].append(annotation)
+        if ANNOTATION_VERSION and key in annotation_dict:
+            for annotation in annotation_dict[key]:
+                annotation["id"] = annotation_id
+                dataset["scans"][scan_id]["annotation_ids"].append(annotation_id)
+                annotation_id += 1
+                annotation["scan_id"] = scan_id
+                dataset["annotations"].append(annotation)
 
-    scan_id += 1
+        scan_id += 1
 
-print("Saving the dataset definition to json...")
-with open(f"../datasets/roosts_{DATASET_VERSION}/roosts_{DATASET_VERSION}.json", 'w') as f:
-    json.dump(dataset, f, indent=PRETTY_PRINT_INDENT)
+    print("Saving the dataset definition to json...")
+    with open(f"{DATASET_DIR}/roosts_{DATASET_VERSION}.json", 'w') as f:
+        json.dump(dataset, f, indent=PRETTY_PRINT_INDENT)
 
 
 ############### Step 7: Save a set of splits to json ###############
-print("Saving the dataset splits...")
-splits = {}
-for split in SPLIT_PATHS:
-    splits[split] = [scan_key_to_scan_id[scan.strip()] for scan in open(SPLIT_PATHS[split], "r").readlines()]
-with open(f"../datasets/roosts_{DATASET_VERSION}/roosts_{SPLIT_VERSION}.json", 'w') as f:
-    json.dump(splits, f, indent=PRETTY_PRINT_INDENT)
+if not os.path.exists(f"{DATASET_DIR}/roosts_{SPLIT_VERSION}.json") or OVERWRITE_SPLITS:
+    if not create_annotation_json:
+        dataset = json.load(open(f"{DATASET_DIR}/roosts_{DATASET_VERSION}.json", 'r'))
+        scan_key_to_scan_id = {}
+        for scan in dataset["scans"]:
+            scan_key_to_scan_id[scan["key"]] = scan["id"]
+
+    print("Saving the dataset splits...")
+    splits = {}
+    for split in SPLIT_PATHS:
+        splits[split] = [scan_key_to_scan_id[scan.strip()] for scan in open(SPLIT_PATHS[split], "r").readlines()]
+    with open(f"{DATASET_DIR}/roosts_{SPLIT_VERSION}.json", 'w') as f:
+        json.dump(splits, f, indent=PRETTY_PRINT_INDENT)
 
 
 print("All done.")
