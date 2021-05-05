@@ -3,7 +3,7 @@ Weather surveillance radar archives hold detailed information about biological p
 Given radar scan lists, annotations, and specifications, this repository prepares datasets for training and evaluating 
 machine learning models for detecting and tracking communal bird roosts. 
 
-### Under Active Development
+### Under Development
 - install the dataset to Detectron2
 - prepare input data to UI
 
@@ -58,12 +58,14 @@ generated during the preparation (see the following Release section for more inf
     i.e. when calling `radar2mat`, `ydirection='xy'` by default.
     In such rendered arrays, y is the first dimension and x the second.
     Large y indicates North and large x indicates East. 
-    As of now this repo renders arrays with `ydirection='xy'`. 
+    As of now this wsrdata repo renders arrays with `ydirection='xy'`.
+    Annotations v1.0.0 in this repo also uses `ydirection='xy'`.
     To visualize the array channels using matplotlib's `pyplot.imshow`, 
     we need to set `origin='lower'` in order that North is the top of the image.
     Before saving images of array channels for UI using matplotlib's `image.imsave`, 
-    we need to manually flip the y axis of the arrays and annotations in order that North is the top of the image.
-    - Although not the case in this repo, if `ydirection='ij'`, large y will indicate South.
+    we need to manually flip the y axis of the arrays and annotations v1.0.0 in order that 
+    North is the top of the image.
+    - Although not the case in this wsrdata repo, if `ydirection='ij'`, large y will indicate South.
     Flip the y axis of annotations so that they correspond to the rendered arrays.
     To visualize the array channels using matplotlib's `pyplot.imshow`, 
     the default `origin=None` will yield images with North as the top.
@@ -101,6 +103,8 @@ generated during the preparation (see the following Release section for more inf
 #### annotations
 - **v1.0.0** is a txt file and can be downloaded 
 [here](https://www.dropbox.com/s/0j9srf0jt6lc76e/user_annotations.txt?dl=0).
+In the file, y and x are in the range of -150000 to 150000 meters. 
+Large y indicates North; large x indicates East.
 Notice that the second column can end with ".gz" or ".Z". 
 Previous to this repository, the list was processed to become *.mat files 
 [here](https://www.dropbox.com/s/eti469m1z4634x4/Annotations.zip?dl=0) and used by [1]. 
