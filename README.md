@@ -3,13 +3,9 @@ Weather surveillance radar archives hold detailed information about biological p
 Given radar scan lists, annotations, and specifications, this repository prepares datasets for training and evaluating 
 machine learning models for detecting and tracking communal bird roosts. 
 
-### Under Construction
+### Under Active Development
 - install the dataset to Detectron2
-- more functionality for the API; refer to [COCO API](https://github.com/cocodataset/cocoapi)
-- maybe [HDF5](https://docs.h5py.org/en/stable/quick.html) to store arrays
-- pyart rendering [issue](https://github.com/darkecology/wsrdata/issues/1);
-as of now, need to manually make sure the split json files do not contain scans with rendering exceptions since
-some array paths in the json may be invalid due to those exceptions
+- prepare input data to UI
 
 ### Repo Overview
 - **datasets** stores dataset definitions that are prepared by this repository.
@@ -189,6 +185,13 @@ There are two ways to visualize data.
       the notebook should be self-explanatory.
 2. `tools/visualization.py`, given a scan list file and a json file, can generate png images that 
     visualizes selected channels from arrays rendered from the scans with annotations from the json file.
+
+### Potential Future Work
+- more functionality for the API; refer to [COCO API](https://github.com/cocodataset/cocoapi)
+- maybe [HDF5](https://docs.h5py.org/en/stable/quick.html) to store arrays
+- pyart rendering [issue](https://github.com/darkecology/wsrdata/issues/1);
+as of now, need to manually make sure the split json files do not contain scans with rendering exceptions since
+some array paths in the json may be invalid due to those exceptions
 
 ### References
 [1] [Detecting and Tracking Communal Bird Roosts in Weather Radar Data.](https://people.cs.umass.edu/~zezhoucheng/roosts/radar-roosts-aaai20.pdf)

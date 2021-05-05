@@ -45,7 +45,7 @@ SPLIT_PATHS         = {"train": os.path.join("../static/scan_lists", DATASET_VER
                        "test": os.path.join("../static/scan_lists", DATASET_VERSION, SPLIT_VERSION, "test.txt")}
 
 ARRAY_VERSION       = "v0.1.0" # corresponding to arrays defined by the following lines
-ARRAY_Y_DIRECTION   = "xy" # the default radar direction, + is north, row 0 is south
+ARRAY_Y_DIRECTION   = "xy" # default radar direction, y is first dim (row), large y is north, row 0 is south
 ARRAY_R_MAX         = 150000.0
 ARRAY_DIM           = 600
 ARRAY_ATTRIBUTES    = ["reflectivity", "velocity", "spectrum_width"]

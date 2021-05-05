@@ -61,7 +61,9 @@ for scan_list in SCAN_LIST_PATHS:
         scan = dataset["scans"][scan_to_id[SCAN]]
         array = np.load(os.path.join(dataset["info"]["array_dir"], scan["array_path"]))["array"]
 
-        fig, axs = plt.subplots(1, 3, figsize=(21, 7), constrained_layout=True)
+        fig, axs = plt.subplots(int(np.ceil(len(CHANNELS)/3)), 3,
+                                figsize=(21, 7*int(np.ceil(len(CHANNELS)/3))),
+                                constrained_layout=True)
         for i, (attr, elev) in enumerate(CHANNELS):
             subplt = axs[i]
             subplt.axis('off')
