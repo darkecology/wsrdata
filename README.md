@@ -50,6 +50,7 @@ generated during the preparation (see the following Release section for more inf
     a given list of scans with annotations from a designated json file.
     - **visualization.ipynb** can interactively (1) render an array from a scan and visualize it and
     (2) visualize selected channels from a rendered array with its annotation(s) from a json file.
+    - **tmp** is for files temporarily needed for development or sanity check but not dataset preparation.
     - **generate_img_for_ui** generates images for the web interface.
     - **json_to_csv.py** generates csv files from json (for the web interface).
 
