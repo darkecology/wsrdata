@@ -119,7 +119,7 @@ User factors are currently manually imported to `tools/prepare_dataset_v0.0.1.py
     
 ### Installation
 Create and activate a python 3.6 environment. Check the cuda version at, for example, `/usr/local/cuda`, 
-or potentially by `nvcc -V`. While many versions should workd, we use cuda 10.1. 
+or potentially by `nvcc -V`. While many versions should work, we use cuda 10.1. 
 Install a compatible version of [PyTorch](https://pytorch.org/get-started/previous-versions/).
 ```bash
 conda create -n roost2021 python=3.6
@@ -127,11 +127,11 @@ conda activate roost2021
 pip install torch==1.7.1+cu101 torchvision==0.8.2+cu101 torchaudio==0.7.2 -f https://download.pytorch.org/whl/torch_stable.html
 ```
 
-Assume we are in a roost project directory `roost-system` which has a `libs` directory for 
+Assume we are in a roost project directory `roost-system` which contains a `libs` directory for 
 installing libraries and toolkits, such as this dataset preparation repo.
 ```bash
 cd libs
-git clone https://github.com/darkecology/pywsrlib
+git clone https://github.com/darkecology/pywsrlib.git
 pip install -e pywsrlib
 git clone https://github.com/darkecology/wsrdata.git
 pip install -e wsrdata
@@ -148,6 +148,23 @@ vim ~/.aws/credentials
 vim ~/.aws/config
 ```
 
+Optional installation for jupyter notebook functionalities.
+- Run `pip install jupyter` to install jupyter
+- Add the python environment to jupyter. Replace `ENV` by `roost2021` in our case.
+    ```bash
+    conda install -c anaconda ipykernel
+    python -m ipykernel install --user --name=ENV
+    ```
+- To check which environments are in jupyter as kernels and to delete one:
+    ```bash
+    jupyter kernelspec list
+    jupyter kernelspec uninstall ENV
+    ```
+- Run jupyter notebook on a server: `jupyter notebook --no-browser --port=9999`
+- Monitor from local: `ssh -N -f -L localhost:9998:localhost:9999 username@server`
+- Enter `localhost:9998` from a local browser tab to run the jupyter notebook interactively;
+  the notebook should be self-explanatory.
+     
 ### Dataset Preparation
 Inside our `wsrdata` repo, let's produce `roosts_v0.0.1.json` to check whether the installation is successful.
 - `cd` into the `tools` directory and run `python prepare_dataset_v0.0.1.py`
@@ -167,21 +184,6 @@ To produce a customized dataset, place customized scan lists, annotations, and u
 There are two ways to visualize data.
 1. Run `tools/visualization.ipynb` to interactively (1) render and visualize a scan or 
     (2) visualize channels from an array with its annotations from a json file.
-    - Run `pip3 install jupyter` to install jupyter
-    - Add the python environment to jupyter: 
-        ```bash
-        conda install -c anaconda ipykernel
-        python -m ipykernel install --user --name=ENV
-        ```
-    - To check which environments are in jupyter as kernels and to delete one:
-        ```bash
-        jupyter kernelspec list
-        jupyter kernelspec uninstall ENV
-        ```
-    - Run jupyter notebook on a server: `jupyter notebook --no-browser --port=9999`
-    - Monitor from local: `ssh -N -f -L localhost:9998:localhost:9999 username@server`
-    - Enter `localhost:9998` from a local browser tab to run the jupyter notebook interactively;
-      the notebook should be self-explanatory.
 2. `tools/visualization.py`, given a scan list file and a json file, can generate png images that 
     visualizes selected channels from arrays rendered from the scans with annotations from the json file.
 
