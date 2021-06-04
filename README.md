@@ -3,10 +3,6 @@ Weather surveillance radar archives hold detailed information about biological p
 Given radar scan lists, annotations, and specifications, this repository prepares datasets for training and evaluating 
 machine learning models for detecting and tracking communal bird roosts. 
 
-### Under Development
-- install the dataset to Detectron2
-- prepare input data to UI
-
 ### Repo Overview
 - **datasets** stores dataset definitions that are prepared by this repository.
     - **datasets/roosts_v0.0.1_official** defines a toy dataset for reference.
@@ -70,6 +66,7 @@ generated during the preparation (see the following Release section for more inf
     Flip the y axis of annotations so that they correspond to the rendered arrays.
     To visualize the array channels using matplotlib's `pyplot.imshow`, 
     the default `origin=None` will yield images with North as the top.
+    - **annotations v1.0.0** contains duplicated annotations, i.e. some roosts are annotated by more than one annotators.
 
 ### Release
 #### datasets
@@ -130,21 +127,14 @@ conda activate roost2021
 pip install torch==1.7.1+cu101 torchvision==0.8.2+cu101 torchaudio==0.7.2 -f https://download.pytorch.org/whl/torch_stable.html
 ```
 
-Assume we are under a roost project directory `roosts`. Let's create a `libs` directory where
-we will install the pywsrlib toolkit and data preparation functions in this repository. 
+Assume we are in a roost project directory `roost-system` which has a `libs` directory for 
+installing libraries and toolkits, such as this dataset preparation repo.
 ```bash
-mkdir libs
 cd libs
-
-pip install netCDF4==1.5.6 scipy==1.5.4 matplotlib==3.3.4 pandas==1.1.5 more-itertools==8.7.0
 git clone https://github.com/darkecology/pywsrlib
-cd pywsrlib
-pip install -e .
-cd ..
-
+pip install -e pywsrlib
 git clone https://github.com/darkecology/wsrdata.git
-cd wsrdata
-pip install -e .
+pip install -e wsrdata
 ```
 
 [Configure AWS](https://docs.aws.amazon.com/cli/latest/userguide/cli-chap-configure.html) by
@@ -159,7 +149,7 @@ vim ~/.aws/config
 ```
 
 ### Dataset Preparation
-Let's produce `roosts_v0.0.1.json` to check whether the installation is successful.
+Inside our `wsrdata` repo, let's produce `roosts_v0.0.1.json` to check whether the installation is successful.
 - `cd` into the `tools` directory and run `python prepare_dataset_v0.0.1.py`
 - The generated `roosts_v0.0.1.json` and `roosts_v0.0.1_standard_splits.json` under 
 `datasets/roosts_v0.0.1/` should be the same as those under `datasets/roosts_v0.0.1_official/`

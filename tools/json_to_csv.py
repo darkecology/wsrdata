@@ -14,7 +14,7 @@ scans = set(scans)
 
 with open(DATASET_JSON_PATH, "r") as f:
     dataset = json.load(f)
-    max_y = dataset["info"]["array_shape"][0] - 1
+    max_y = dataset["info"]["array_shape"][2] - 1
 
 os.makedirs(OUTPUT_DIR, exist_ok=True)
 outputs = {}
