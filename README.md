@@ -118,9 +118,10 @@ User factors are currently manually imported to `tools/prepare_dataset_v0.0.1.py
 
     
 ### Installation
-Create and activate a python 3.6 environment. Check the cuda version at, for example, `/usr/local/cuda`, 
-or potentially by `nvcc -V`. While many versions should work, we use cuda 10.1. 
-Install a compatible version of [PyTorch](https://pytorch.org/get-started/previous-versions/).
+Create and activate a python 3.6 environment. 
+Install a compatible version of [PyTorch](https://pytorch.org/get-started/previous-versions/), 
+which comes with many other dependencies.
+For GPU, check the cuda version at, for example, `/usr/local/cuda`, or potentially by `nvcc -V`. 
 ```bash
 conda create -n roost2021 python=3.6
 conda activate roost2021
