@@ -305,7 +305,13 @@ if not os.path.exists(f"{DATASET_DIR}/roosts_{DATASET_VERSION}.json") or OVERWRI
     scans = [scan.strip() for scan in open(SCAN_LIST_PATH, "r").readlines()]
     scan_id = 0
     annotation_id = 0
+    n_errors = 0
     for n, key in enumerate(scans):
+        # skip if there is downloading or rendering error
+        if not os.path.exists(f"{ARRAY_DIR}/{key[4:8]}/{key[8:10]}/{key[10:12]}/{key[0:4]}/{key}.npz"):
+            n_errors += 1
+            continue
+
         # add array to dataset
         dataset["scans"].append({
             "id":                   scan_id,
@@ -325,6 +331,7 @@ if not os.path.exists(f"{DATASET_DIR}/roosts_{DATASET_VERSION}.json") or OVERWRI
 
         scan_id += 1
 
+    print(f"{n_errors} scans are skipped since their arrays are missing.")
     print("Saving the dataset definition to json...")
     with open(f"{DATASET_DIR}/roosts_{DATASET_VERSION}.json", 'w') as f:
         json.dump(dataset, f, indent=PRETTY_PRINT_INDENT)
@@ -334,9 +341,9 @@ if not os.path.exists(f"{DATASET_DIR}/roosts_{DATASET_VERSION}.json") or OVERWRI
 if not os.path.exists(f"{DATASET_DIR}/roosts_{SPLIT_VERSION}.json") or OVERWRITE_SPLITS:
     if not create_annotation_json:
         dataset = json.load(open(f"{DATASET_DIR}/roosts_{DATASET_VERSION}.json", 'r'))
-        scan_key_to_scan_id = {}
-        for scan in dataset["scans"]:
-            scan_key_to_scan_id[scan["key"]] = scan["id"]
+    scan_key_to_scan_id = {}
+    for scan in dataset["scans"]:
+        scan_key_to_scan_id[scan["key"]] = scan["id"]
 
     print("Saving the dataset splits...")
     splits = {}

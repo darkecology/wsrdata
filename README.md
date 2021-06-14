@@ -41,7 +41,7 @@ generated during the preparation (see the following Release section for more inf
     - **prepare_dataset_v0.0.1.py** is a modifiable template that prepares the toy dataset v0.0.1; it
      downloads radar scans, renders arrays, reads annotations, and creates json files that define the dataset.
      See the following Dataset Preperation section for detailed steps.
-    - prepare_dataset_v0.1.0: See **prepare_dataset_v0.1.0_help/README.md** for steps.
+    - prepare_dataset_v0.1.0: See **prepare_dataset_v0.1.0_help/README.md** for details.
     - **visualization.py** generates png images that visualize selected channels in rendered arrays for 
     a given list of scans with annotations from a designated json file.
     - **visualization.ipynb** can interactively (1) render an array from a scan and visualize it and
@@ -66,7 +66,6 @@ generated during the preparation (see the following Release section for more inf
     Flip the y axis of annotations so that they correspond to the rendered arrays.
     To visualize the array channels using matplotlib's `pyplot.imshow`, 
     the default `origin=None` will yield images with North as the top.
-    - **annotations v1.0.0** contains duplicated annotations, i.e. some roosts are annotated by more than one annotators.
 
 ### Release
 #### datasets
@@ -118,22 +117,9 @@ User factors are currently manually imported to `tools/prepare_dataset_v0.0.1.py
 
     
 ### Installation
-Create and activate a python 3.6 environment. 
-Install a compatible version of [PyTorch](https://pytorch.org/get-started/previous-versions/), 
-which comes with many other dependencies.
-For GPU, check the cuda version at, for example, `/usr/local/cuda`, or potentially by `nvcc -V`. 
 ```bash
 conda create -n roost2021 python=3.6
 conda activate roost2021
-pip install torch==1.7.1+cu101 torchvision==0.8.2+cu101 torchaudio==0.7.2 -f https://download.pytorch.org/whl/torch_stable.html
-```
-
-Assume we are in a roost project directory `roost-system` which contains a `libs` directory for 
-installing libraries and toolkits, such as this dataset preparation repo.
-```bash
-cd libs
-git clone https://github.com/darkecology/pywsrlib.git
-pip install -e pywsrlib
 git clone https://github.com/darkecology/wsrdata.git
 pip install -e wsrdata
 ```
@@ -167,7 +153,7 @@ Optional installation for jupyter notebook functionalities.
   the notebook should be self-explanatory.
      
 ### Dataset Preparation
-Inside our `wsrdata` repo, let's produce `roosts_v0.0.1.json` to check whether the installation is successful.
+Inside our `wsrdata` repo, let's produce `datasets/roosts_v0.0.1.json` to check whether the installation is successful.
 - `cd` into the `tools` directory and run `python prepare_dataset_v0.0.1.py`
 - The generated `roosts_v0.0.1.json` and `roosts_v0.0.1_standard_splits.json` under 
 `datasets/roosts_v0.0.1/` should be the same as those under `datasets/roosts_v0.0.1_official/`
@@ -189,11 +175,10 @@ There are two ways to visualize data.
     visualizes selected channels from arrays rendered from the scans with annotations from the json file.
 
 ### Potential Future Work
+- remove duplicated annotations by more than one annotator from **annotations v1.0.0**
 - more functionality for the API; refer to [COCO API](https://github.com/cocodataset/cocoapi)
 - maybe [HDF5](https://docs.h5py.org/en/stable/quick.html) to store arrays
-- pyart rendering [issue](https://github.com/darkecology/wsrdata/issues/1);
-as of now, need to manually make sure the split json files do not contain scans with rendering exceptions since
-some array paths in the json may be invalid due to those exceptions
+- pyart rendering [issue](https://github.com/darkecology/wsrdata/issues/1)
 
 ### References
 [1] [Detecting and Tracking Communal Bird Roosts in Weather Radar Data.](https://people.cs.umass.edu/~zezhoucheng/roosts/radar-roosts-aaai20.pdf)

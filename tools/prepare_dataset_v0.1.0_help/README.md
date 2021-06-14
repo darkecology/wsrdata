@@ -19,3 +19,5 @@ Run `handle_exceptions.py` to (1) print scans that are not downloaded, (2) colle
 
 Run `tools/prepare_dataset_v0.1.0.py` which is configured to skip downloading and rendering and 
 directly create json files.
+
+Run `tools/prepare_dataset_v0.1.0_raw.py` for not scaling/standardizing the bounding boxes.

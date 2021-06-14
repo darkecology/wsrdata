@@ -1,5 +1,5 @@
 """
-This script runs the data preparation pipeline to create the toy dataset v0.0.1.
+This script runs the data preparation pipeline to create dataset v0.1.0.
 It can be modified to create customized datasets.
 
 In most cases, changing values for VARIABLEs in Step 1 suffices.
@@ -26,19 +26,15 @@ from wsrdata.render_npy_arrays import render_by_scan_list
 from wsrdata.utils.bbox_utils import scale_XYWH_box
 
 ############### Step 1: define metadata ###############
-PRETTY_PRINT_INDENT = 4 # default None; if integer n, generated json will be human-readable with n indentations
+PRETTY_PRINT_INDENT = None # default None; if integer n, generated json will be human-readable with n indentations
 
-DESCRIPTION         = "A mini roost dataset with bbox annotations for testing whether the " \
-                      "data preparation pipeline is successfully set up. Three scans in the " \
-                      "train and test splits respectively."
+DESCRIPTION         = "The wsrdata roost dataset v0.1.0 with raw bbox annotations."
 COMMENTS            = "(1) There is no restrictions on radar scans and thus we use Public Domain Mark for them; " \
                       "we use the Apache License 2.0 for this dataset. " \
-                      "(2) Bounding boxes are standardized to the heuristic scaling factor of 0.7429 " \
-                      "using scaling factors learned by the EM algorithm as in Cheng et al. (2019). " \
-                      "(3) Paths in this json use / instead of \\; this may need to be changes for a different OS."
+                      "(2) Paths in this json use / instead of \\; this may need to be changes for a different OS."
 URL                 = ""
-DATASET_VERSION     = "v0.0.1" # There can be different train/val/test splits of the dataset denoted as v0.0.1_xxx.
-SPLIT_VERSION       = "v0.0.1_standard_splits"
+DATASET_VERSION     = "v0.1.0" # There can be different train/val/test splits of the dataset denoted as v0.0.1_xxx.
+SPLIT_VERSION       = "v0.1.0_standard_splits" # "v0.1.0_KDOX_splits"
 ANNOTATION_VERSION  = "v1.0.0" # optional -- an empty string indicates a dataset without annotations
 USER_MODEL_VERSION  = "v1.0.0_hardEM200000"
 DATE_CREATED        = "2021/04/20"
@@ -50,15 +46,16 @@ CATEGORIES          = ["roost"]
 DEFAULT_CAT_ID      = 0 # by default, annotations are for CATEGORIES[0] which is "roost" in this template
 OVERWRITE_DATASET   = False # default False; whether to overwrite the previous json file for annotations (if it exists)
 OVERWRITE_SPLITS    = False # default False; whether to overwrite the previous json file for splits (if it exists)
-SKIP_DOWNLOADING    = False # default False; whether to skip all downloading
-SKIP_RENDERING      = False # default False; whether to skip all rendering
+SKIP_DOWNLOADING    = True # default False; whether to skip all downloading
+SKIP_RENDERING      = True # default False; whether to skip all rendering
 FORCE_RENDERING     = False # default False; whether to rerender even if an array npz already exists
 
 SCAN_LIST_PATH      = os.path.join("../static/scan_lists", DATASET_VERSION, "scan_list.txt")
 SPLIT_PATHS         = {"train": os.path.join("../static/scan_lists", DATASET_VERSION, SPLIT_VERSION, "train.txt"),
+                       "val": os.path.join("../static/scan_lists", DATASET_VERSION, SPLIT_VERSION, "val.txt"),
                        "test": os.path.join("../static/scan_lists", DATASET_VERSION, SPLIT_VERSION, "test.txt")}
 
-ARRAY_VERSION       = "v0.0.1" # corresponding to arrays defined by the following lines
+ARRAY_VERSION       = "v0.1.0" # corresponding to arrays defined by the following lines
 ARRAY_Y_DIRECTION   = "xy" # default radar direction, y is first dim (row), large y is north, row 0 is south
 ARRAY_R_MAX         = 150000.0
 ARRAY_DIM           = 600
@@ -92,8 +89,8 @@ DUALPOL_RENDER_CONFIG   = {"ydirection":          ARRAY_Y_DIRECTION,
                            "use_ground_range":    True,
                            "interp_method":       "nearest"}
 
-# manually imported from static/user_models/v1.0.0/hardEM200000_user_model_python2.pkl
-TARGET_SCALE_FACTOR     = 0.7429 # average sheldon factor
+# No scaling
+TARGET_SCALE_FACTOR     = 1.
 BBOX_SCALING_FACTORS    = {'Ftian-KOKX': 0.7827008296465084,
                            'William Curran-KDOX': 0.6671858060703622,
                            'andrew-KAMX': 0.8238429277541144,
@@ -121,6 +118,7 @@ BBOX_SCALING_FACTORS    = {'Ftian-KOKX': 0.7827008296465084,
                            'sheldon-KOKX': 0.6049163038774339,
                            'sheldon-KRTX': 0.5936236006148872,
                            'sheldon-KTBW': 0.7830289430054851,}
+for i in BBOX_SCALING_FACTORS: BBOX_SCALING_FACTORS[i] = 1.
 
 # in most cases, no need to change the following
 SCAN_ROOT_DIR               = "../static/scans"
@@ -134,7 +132,7 @@ ARRAY_SHAPE                 = (len(ARRAY_ATTRIBUTES), len(ARRAY_ELEVATIONS), ARR
 DUALPOL_SHAPE               = (len(DUALPOL_ATTRIBUTES), len(DUALPOL_ELEVATIONS), DUALPOL_DIM, DUALPOL_DIM)
 ANNOTATION_DIR              = os.path.join("../static/annotations", ANNOTATION_VERSION) if ANNOTATION_VERSION else ""
 BBOX_MODE                   = "XYWH"
-DATASET_DIR                 = f"../datasets/roosts_{DATASET_VERSION}"
+DATASET_DIR                 = f"../datasets/roosts_{DATASET_VERSION}_raw"
 
 
 ############### Step 2: check for conflicts, update logs, create directories ###############
