@@ -348,7 +348,11 @@ if not os.path.exists(f"{DATASET_DIR}/roosts_{SPLIT_VERSION}.json") or OVERWRITE
     print("Saving the dataset splits...")
     splits = {}
     for split in SPLIT_PATHS:
-        splits[split] = [scan_key_to_scan_id[scan.strip()] for scan in open(SPLIT_PATHS[split], "r").readlines()]
+        splits[split] = [
+            scan_key_to_scan_id[scan.strip()] for scan in open(SPLIT_PATHS[split], "r").readlines()
+            if scan.strip() in scan_key_to_scan_id
+        ]
+
     with open(f"{DATASET_DIR}/roosts_{SPLIT_VERSION}.json", 'w') as f:
         json.dump(splits, f, indent=PRETTY_PRINT_INDENT)
 
