@@ -5,7 +5,8 @@ machine learning models for detecting and tracking communal bird roosts.
 
 ### Repo Overview
 - **datasets** stores dataset definitions that are prepared by this repository.
-    - **datasets/roosts_v0.0.1_official** defines a toy dataset for reference.
+    - **datasets/roosts_v0.0.1_official** defines a toy dataset for reference. 
+    Notice that various fields can be added in new dataset versions.
         - **roosts_v0.0.1.json** is in a modified [COCO format](https://cocodataset.org/#format-data) and
         human-readable with line indentation of 4. It defines a dataset based on or referring to:
             1. the scan list **static/scan_lists/v0.0.1/scan_list.txt**, 
@@ -34,21 +35,36 @@ generated during the preparation (see the following Release section for more inf
         - As of 4/20/2021, there is only one set of csv annotations **v1.0.0/user_annotations.txt**. 
         If in the future there is a new input format for annotations, related code including that in 
         step 6 of **tools/prepare_dataset_\*.py** will need to be updated.
+        - As of 12/31/2021, **v2.0.0** contains ecologist-screened roost-system predictions for 12 great lakes stations.
     - **user_models** is for different versions of bounding box scaling factors learned by 
     an EM algorithm [1] to alleviate annotator biases
 
 - **tools** contains scripts to run the data preparation pipeline and visualization:
+    - **analyze_screened_data.ipynb** is a notebook from Maria our CSU colleague for calculating stats from 
+    csv files resulting from screening.
     - **prepare_dataset_v0.0.1.py** is a modifiable template that prepares the toy dataset v0.0.1; it
      downloads radar scans, renders arrays, reads annotations, and creates json files that define the dataset.
-     See the following Dataset Preperation section for detailed steps.
-    - prepare_dataset_v0.1.0: See **prepare_dataset_v0.1.0_help/README.md** for details.
+     The scans and annotations in the json are 0-indexed.
+     See the following Original Dataset Preperation section for detailed steps.
+    - prepare_dataset_v0.1.0 is based on the above template and generates the dataset in [1] in the COCO format.
+    See **prepare_dataset_v0.1.0_help/README.md** for details.
+    - **prepare_dataset_v0.2.0.py**: prepares a dataset that contains dataset v0.1.0 and also 
+    ecologist-screened roost-system predictions. This script does not scale the screened annotations by user models.
+    The scans and annotations in the json are 1-indexed. 
+    This script doesn't check for duplications; 
+    need to make sure the same scan doesn't appear in multiple versions manually.
+    See the 
+    [documentation](https://docs.google.com/document/d/1zX8Sa2hVvjWBhFXQg124XRX1laKY-3aK43dDJLLlD0I/edit?usp=sharing) 
+    for detailed steps to generate such a dataset.
+    - **screened_csv_to_txt.ipynb** calculates stats of ecologist-screened roost-system predictions and
+    defines scan lists and splits under **static/scan_lists/{version}**.
     - **visualization.py** generates png images that visualize selected channels in rendered arrays for 
     a given list of scans with annotations from a designated json file.
     - **visualization.ipynb** can interactively (1) render an array from a scan and visualize it and
     (2) visualize selected channels from a rendered array with its annotation(s) from a json file.
     - **tmp** is for files temporarily needed for development or sanity check but not dataset preparation.
-    - **generate_img_for_ui** generates images for the web interface.
-    - **json_to_csv.py** generates csv files from json (for the web interface).
+    - **generate_img_for_ui.py** generates images for the web interface.
+    - **json_to_csv.py** generates csv files from json for the web interface.
 
 - _**Important notes:**_
     - By default pywsrlib renders arrays in the geographical direction;
@@ -69,8 +85,11 @@ generated during the preparation (see the following Release section for more inf
 
 ### Release
 #### datasets
+- user_models are for scaling bounding boxes since annotators may differ in style; no user_models is used by default.
+- scans and annotations in roosts_{v0.0.1, v0.1.0} are 0-indexed; others are 1-indexed.
 - **roosts_v0.0.1** uses arrays v0.0.1, annotations v1.0.0, and user_models v1.0.0_hardEM200000.
 - **roosts_v0.1.0** uses arrays v0.1.0, annotations v1.0.0, and user_models v1.0.0_hardEM200000.
+- **roosts_v0.2.0** uses arrays v0.2.0, annotations v2.0.0, in addition to everything from roosts_v0.1.0.
 
 #### scan_lists
 - **v0.0.1** has 6 scans and can be used to test whether the dataset preparation pipeline is successfully set up.
@@ -91,9 +110,10 @@ generated during the preparation (see the following Release section for more inf
         - **val.txt**: 11599 scans
         - **test.txt**: 23587 scans
     - **v0.1.0_KDOX_splits** is a subset of **v0.1.0_standard_splits** with only KDOX scans.
+- **v0.2.0** has scan lists for 12 great lakes stations.
 
 #### arrays
-- **v0.0.1** and **v0.1.0**
+- **v0.0.1**, **v0.1.0**, **v0.2.0**
     - "array": _{reflectivity, velocity, spectrum_width}_ x _elevations{0.5, 1.5, 2.5, 3.5, 4.5}_ x 600 x 600.
     - "dualpol": _{differential_reflectivity, cross_correlation_ratio, differential_phase}_ x 
     _elevations{0.5, 1.5, 2.5, 3.5, 4.5}_ x 600 x 600.
@@ -108,6 +128,9 @@ Previous to this repository, the list was processed to become *.mat files
 [here](https://www.dropbox.com/s/eti469m1z4634x4/Annotations.zip?dl=0) and used by [1]. 
 Refer to [this sheet](https://docs.google.com/spreadsheets/d/1lvEWNSSJsT9WYGgUE3rIkOoy9vU2zHEPTCiVJnRdFaI/edit)
 for annotator information.
+- **v2.0.0** contains annotations for 12 great lakes stations predicted by roost-system with detector
+`07/logs/resnet101-FPN_detptr_anc10_regsl1_imsz1200_lr0.001_it150k/model_0039999.pth` and 
+screened by our CSU ecology colleagues.
 
 #### user_models
 - **v1.0.0** can be found [here](https://www.dropbox.com/sh/d3ronsvzr9c0xxq/AAD9fgrk2exRuyWcBjtU7Ea8a?dl=0),
@@ -152,7 +175,7 @@ Optional installation for jupyter notebook functionalities.
 - Enter `localhost:9998` from a local browser tab to run the jupyter notebook interactively;
   the notebook should be self-explanatory.
      
-### Dataset Preparation
+### Original Dataset Preparation
 Inside our `wsrdata` repo, let's produce `datasets/roosts_v0.0.1.json` to check whether the installation is successful.
 - `cd` into the `tools` directory and run `python prepare_dataset_v0.0.1.py`
 - The generated `roosts_v0.0.1.json` and `roosts_v0.0.1_standard_splits.json` under 
