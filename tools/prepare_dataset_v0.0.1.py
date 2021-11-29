@@ -94,6 +94,7 @@ DUALPOL_RENDER_CONFIG   = {"ydirection":          ARRAY_Y_DIRECTION,
 
 # manually imported from static/user_models/v1.0.0/hardEM200000_user_model_python2.pkl
 TARGET_SCALE_FACTOR     = 0.7429 # average sheldon factor
+# TARGET_SCALE_FACTOR     = 1. # if no scaling
 BBOX_SCALING_FACTORS    = {'Ftian-KOKX': 0.7827008296465084,
                            'William Curran-KDOX': 0.6671858060703622,
                            'andrew-KAMX': 0.8238429277541144,
@@ -121,6 +122,7 @@ BBOX_SCALING_FACTORS    = {'Ftian-KOKX': 0.7827008296465084,
                            'sheldon-KOKX': 0.6049163038774339,
                            'sheldon-KRTX': 0.5936236006148872,
                            'sheldon-KTBW': 0.7830289430054851,}
+# for i in BBOX_SCALING_FACTORS: BBOX_SCALING_FACTORS[i] = 1. # if no scaling
 
 # in most cases, no need to change the following
 SCAN_ROOT_DIR               = "../static/scans"

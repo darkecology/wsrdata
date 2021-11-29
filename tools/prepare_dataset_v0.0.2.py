@@ -1,5 +1,5 @@
 """
-This script runs the data preparation pipeline to create dataset v0.2.0.
+This script runs the data preparation pipeline to create dataset v0.0.2.
 It can be modified to create customized datasets.
 
 In most cases, changing values for VARIABLEs in Step 1 suffices.
@@ -24,23 +24,23 @@ from wsrdata.render_npy_arrays import render_by_scan_list
 from wsrdata.utils.bbox_utils import scale_XYWH_box
 
 ############### Step 1: define metadata ###############
-PRETTY_PRINT_INDENT = None # default None; if integer n, generated json will be human-readable with n indentations
+PRETTY_PRINT_INDENT = 4 # default None; if integer n, generated json will be human-readable with n indentations
 
-DESCRIPTION         = "The wsrdata roost dataset v0.2.0 with bounding box annotations."
+DESCRIPTION         = "The wsrdata roost dataset v0.0.2 with bounding box annotations."
 COMMENTS            = "(1) There is no restrictions on radar scans and thus we use Public Domain Mark for them; " \
                       "we use the Apache License 2.0 for this dataset. " \
-                      "(2) This dataset includes a) scans and annotations from v0.1.0 and b) scans from 12 " \
+                      "(2) This dataset includes a) scans and annotations from v0.0.1 and b) scans from 12 " \
                       "great lakes stations and their annotations which are ecologist-screened system predictions. " \
-                      "(3) Bounding boxes from dataset v0.1.0 are standardized to the heuristic scaling factor of " \
+                      "(3) Bounding boxes from dataset v0.0.1 are standardized to the heuristic scaling factor of " \
                       "0.7429 using scaling factors learned by the EM algorithm as in Cheng et al. (2019); " \
                       "the screened system predictions are not scaled. " \
                       "(4) Paths in this json use / instead of \\; this may need to be changes for a different OS."
 URL                 = ""
-PRE_DATASET_VERSION = {"v0.1.0": ("../datasets/roosts_v0.1.0/roosts_v0.1.0.json",
-                                  "../datasets/roosts_v0.1.0/roosts_v0.1.0_standard_splits.json")}
+PRE_DATASET_VERSION = {"v0.0.1": ("../datasets/roosts_v0.0.1/roosts_v0.0.1.json",
+                                  "../datasets/roosts_v0.0.1/roosts_v0.0.1_standard_splits.json")}
                             # Load scans and annotations from some previous dataset version(s) to begin with
-DATASET_VERSION     = "v0.2.0" # There can be different train/val/test splits of the dataset
-SPLIT_VERSION       = "v0.2.0_standard_splits"
+DATASET_VERSION     = "v0.0.2" # There can be different train/val/test splits of the dataset
+SPLIT_VERSION       = "v0.0.2_standard_splits"
 ANNOTATION_VERSION  = "v2.0.0" # optional -- an empty string indicates a dataset without annotations
 DATE_CREATED        = "2021/11/28"
 SCAN_LICENSE        = {"url": "https://creativecommons.org/share-your-work/public-domain/pdm/",
@@ -58,7 +58,7 @@ FORCE_RENDERING     = False # default False; whether to rerender even if an arra
 
 SCAN_LIST_PATH      = os.path.join("../static/scan_lists", DATASET_VERSION, "scan_list.txt")
 SPLIT_PATHS         = {"train": os.path.join("../static/scan_lists", DATASET_VERSION, SPLIT_VERSION, "train.txt"),
-                       "val": os.path.join("../static/scan_lists", DATASET_VERSION, SPLIT_VERSION, "val.txt"),
+                       # "val": os.path.join("../static/scan_lists", DATASET_VERSION, SPLIT_VERSION, "val.txt"),
                        "test": os.path.join("../static/scan_lists", DATASET_VERSION, SPLIT_VERSION, "test.txt")}
 
 ARRAY_VERSION       = "v0.2.0" # corresponding to arrays defined by the following lines
