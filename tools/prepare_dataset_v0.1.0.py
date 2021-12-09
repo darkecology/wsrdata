@@ -245,7 +245,6 @@ if not SKIP_RENDERING:
 create_annotation_json = False
 if not os.path.exists(f"{DATASET_DIR}/roosts_{DATASET_VERSION}.json") or OVERWRITE_DATASET:
     create_annotation_json = True
-    print("Populating the dataset definition...")
 
     # Load annotations
     if ANNOTATION_VERSION:
@@ -358,3 +357,16 @@ if not os.path.exists(f"{DATASET_DIR}/roosts_{SPLIT_VERSION}.json") or OVERWRITE
 
 
 print("All done.")
+
+"""
+# count the number of scans, annotations, and tracks
+import json
+with open("../datasets/roosts_v0.1.0/roosts_v0.1.0.json", "r") as f:
+    datasets = json.load(f)
+
+print(f"{len(datasets['scans'])} scans.")
+print(f"{len(datasets['annotations'])} annotations.")
+
+seq_ids = set([annotation['sequence_id'] for annotation in datasets['annotations']])
+print(f"{len(seq_ids)} tracks.")
+"""

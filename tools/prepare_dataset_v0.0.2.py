@@ -39,10 +39,13 @@ URL                 = ""
 PRE_DATASET_VERSION = {"v0.0.1": ("../datasets/roosts_v0.0.1/roosts_v0.0.1.json",
                                   "../datasets/roosts_v0.0.1/roosts_v0.0.1_standard_splits.json")}
                             # Load scans and annotations from some previous dataset version(s) to begin with
+                            # Always include these previous dataset versions when running this script for
+                            # the first time, to make sure all later created splits are subsets.
 DATASET_VERSION     = "v0.0.2" # There can be different train/val/test splits of the dataset
-SPLIT_VERSION       = "v0.0.2_standard_splits"
+SPLIT_VERSION       = "v0.0.2_standard_splits" # can consists of some v0.0.2 splits and some v0.0.1 split
+INPUT_SPLIT_VERSION = "v0.0.2_standard_splits"
 ANNOTATION_VERSION  = "v2.0.0" # optional -- an empty string indicates a dataset without annotations
-DATE_CREATED        = "2021/11/28"
+DATE_CREATED        = "2021/12/1"
 SCAN_LICENSE        = {"url": "https://creativecommons.org/share-your-work/public-domain/pdm/",
                        "name": "Public Domain Mark"}
 DATASET_LICENSE     = {"url": "http://www.apache.org/licenses/",
@@ -57,9 +60,9 @@ SKIP_RENDERING      = True # default True; whether to skip all rendering
 FORCE_RENDERING     = False # default False; whether to rerender even if an array npz already exists
 
 SCAN_LIST_PATH      = os.path.join("../static/scan_lists", DATASET_VERSION, "scan_list.txt")
-SPLIT_PATHS         = {"train": os.path.join("../static/scan_lists", DATASET_VERSION, SPLIT_VERSION, "train.txt"),
-                       # "val": os.path.join("../static/scan_lists", DATASET_VERSION, SPLIT_VERSION, "val.txt"),
-                       "test": os.path.join("../static/scan_lists", DATASET_VERSION, SPLIT_VERSION, "test.txt")}
+SPLIT_PATHS         = {"train": os.path.join("../static/scan_lists", DATASET_VERSION, INPUT_SPLIT_VERSION, "train.txt"),
+                       # "val": os.path.join("../static/scan_lists", DATASET_VERSION, INPUT_SPLIT_VERSION, "val.txt"),
+                       "test": os.path.join("../static/scan_lists", DATASET_VERSION, INPUT_SPLIT_VERSION, "test.txt")}
 
 ARRAY_VERSION       = "v0.2.0" # corresponding to arrays defined by the following lines
 ARRAY_Y_DIRECTION   = "xy" # default radar direction, y is first dim (row), large y is north, row 0 is south
@@ -232,7 +235,6 @@ if not SKIP_RENDERING:
 create_annotation_json = False
 if not os.path.exists(f"{DATASET_DIR}/roosts_{DATASET_VERSION}.json") or OVERWRITE_DATASET:
     create_annotation_json = True
-    print("Populating the dataset definition...")
 
     # Preparation: load annotations into a dictionary where scan names are keys
     annotation_dict = {}
@@ -285,7 +287,7 @@ if not os.path.exists(f"{DATASET_DIR}/roosts_{DATASET_VERSION}.json") or OVERWRI
             #       10 local_time, 11 station, 12 date, 13 time, 14 local_date, 15 length,
             #       16 tot_score, 17 avg_score, 18 viewed, 19 user_labeled, 20 label, 21 original_label,
             #       22 notes: 'LARGE', 'nr', 'long', 'large', 'rn', 'shrinks', 'shrink',
-            #       23 day_notes: 'pap', 'psp', 'weather', '2', 'ap', 'AP', 'miss', 'cluster', 'clusters',
+            #       23 day_notes: 'pap', 'psp', 'weather', '2', 'ap', 'AP', 'miss', 'cluster', 'clusters'.
             annotations = [annotation.strip().split(",") for annotation in open(csv_file, "r").readlines()[1:]]
             for annotation in annotations:
                 # skip if not ecologist-verified or verified to be non-roost or duplicate

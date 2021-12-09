@@ -106,8 +106,9 @@ for scan_list in SCAN_LIST_PATHS:
             date = SCAN[10:12]
             output_dir = os.path.join(OUTPUT_ROOT, f"{year}/{month}/{date}/{station}")
         else:
-            print("No output directory defined.")
-            raise
+            print("No output directory defined. "
+                  "Please assign values to OUTPUT_DIR or OUTPUT_ROOT and rerun the program. ")
+            exit()
         os.makedirs(output_dir, exist_ok=True)
         fig.savefig(os.path.join(output_dir, SCAN + ".png"), bbox_inches="tight")
         plt.close(fig)

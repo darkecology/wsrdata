@@ -248,7 +248,6 @@ if not SKIP_RENDERING:
 create_annotation_json = False
 if not os.path.exists(f"{DATASET_DIR}/roosts_{DATASET_VERSION}.json") or OVERWRITE_DATASET:
     create_annotation_json = True
-    print("Populating the dataset definition...")
 
     # Load annotations
     if ANNOTATION_VERSION:
