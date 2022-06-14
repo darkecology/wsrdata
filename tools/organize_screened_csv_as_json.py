@@ -1,7 +1,8 @@
 """
-This script is a modifiable template which is written for dataset v0.2.0.
-It organizes scans and annotations from multiple years of a station,
-calculates stats of ecologist-screened roost-system predictions, and save them as json.
+This script is a modifiable template which is written for dataset v0.2.B,
+where B indicates different sampling strategies.
+It organizes scans and annotations from multiple years of a station and save them as json,
+and calculates stats of ecologist-screened roost-system predictions.
 This script process one station at a run because
 loading npz files to calculate average dbz and checking dualpol can be slow.
 """
@@ -18,7 +19,7 @@ args = parser.parse_args()
 SYS_PRED_DIR = '/scratch2/wenlongzhao/roostui/data/all_stations_v2'
 SYS_START_DATE = '0601'
 SYS_END_DATE = '1231'
-    # files import to the UI
+    # files import to the UI, we use scan lists from here
     # eg. scans_KAPX_20200601_20201231.txt
     #     tracks_KAPX_20200601_20201231.txt
 ARRAY_NPZ_DIR = '/scratch2/wenlongzhao/RadarNPZ/v0.2.0'
@@ -106,7 +107,7 @@ for station_year in station_years:
                 station_years[station_year]['n_roost_annotations_not_miss_day'] += 1
             station_years[station_year]['scans_with_roosts'].add(annotation[1])
             assert annotation[1][4:12] == annotation[12]
-            station_years['_'.join((station,year))]['roost_days'].add(annotation[12])
+            station_years['_'.join((station, year))]['roost_days'].add(annotation[12])
 
     # Collect scans and days without roosts
     for day in station_years[station_year]['all_days_to_scans']:

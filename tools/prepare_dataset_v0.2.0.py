@@ -1,7 +1,16 @@
 """
-This script runs the data preparation pipeline to create dataset v0.2.0.
-It can be modified to create customized datasets.
+This script runs the data preparation pipeline to create two json files for
+a train/val/test splitting of dataset v0.2.B, where B indicates different strategies to sample negative days.
+(1) roosts_v0.2.B.json includes the lists of scans and annotations,
+(2) roosts_v0.2.B_*_splits.json includes a splitting of train/val/test scans
+To produce different splits, run this script multiple times.
+In the first run, set PRE_DATASET_VERSION, SCAN_LIST_PATH, and ANNOTATION_VERSION to
+include any scans and annotations that may be wanted in future splits so that
+roosts_v0.2.B.json is comprehensive once it's created;
+to avoid changes in existing datasets,
+future runs of this script to create new splits should not overwrite roosts_v0.2.B.json.
 
+This script can be modified to create customized datasets.
 In most cases, changing values for VARIABLEs in Step 1 suffices.
 Use None, empty lists, empty strings, etc to fill fields that are not applicable.
 
@@ -11,7 +20,6 @@ Common reasons for assertion errors and solutions include:
 Solution: change DATASET_VERSION or delete the previous version under ../datasets.
 (2) ARRAY_RENDER_CONFIG and DUALPOL_RENDER_CONFIG conflict with previous configs of same ARRAY_VERSION
 Solution: change ARRAY_VERSION or clean ../static/arrays including previous_version.json.
-
 """
 
 import os
@@ -26,7 +34,17 @@ from wsrdata.utils.bbox_utils import scale_XYWH_box
 ############### Step 1: define metadata ###############
 PRETTY_PRINT_INDENT = None # default None; if integer n, generated json will be human-readable with n indentations
 
-DESCRIPTION         = "The wsrdata roost dataset v0.2.0 with bounding box annotations."
+# PRE_DATASET_VERSION = {}
+PRE_DATASET_VERSION = {"v0.1.0": ("../datasets/roosts_v0.1.0/roosts_v0.1.0.json",
+                                  "../datasets/roosts_v0.1.0/roosts_v0.1.0_standard_splits.json")} # TODO
+                            # Load scans and annotations from some previous dataset version(s) to begin with
+                            # Always include these previous dataset versions when running this script for
+                            # the first time, to make sure all later created splits are subsets.
+DATASET_VERSION     = "v0.2.0" # There can be different train/val/test splits of the dataset TODO
+SPLIT_VERSION       = f"{DATASET_VERSION}_add_standard_splits" # TODO
+INPUT_SPLIT_VERSION = f"{DATASET_VERSION}_standard_splits" # TODO
+ANNOTATION_VERSION  = "v2.0.0" # optional -- an empty string indicates a dataset without annotations
+DESCRIPTION         = f"The wsrdata roost dataset {DATASET_VERSION} with bounding box annotations."
 COMMENTS            = "(1) There is no restrictions on radar scans and thus we use Public Domain Mark for them; " \
                       "we use the Apache License 2.0 for this dataset. " \
                       "(2) This dataset includes a) scans and annotations from v0.1.0 and b) scans from 12 " \
@@ -36,16 +54,7 @@ COMMENTS            = "(1) There is no restrictions on radar scans and thus we u
                       "the screened system predictions are not scaled. " \
                       "(4) Paths in this json use / instead of \\; this may need to be changes for a different OS."
 URL                 = ""
-PRE_DATASET_VERSION = {"v0.1.0": ("../datasets/roosts_v0.1.0/roosts_v0.1.0.json",
-                                  "../datasets/roosts_v0.1.0/roosts_v0.1.0_standard_splits.json")}
-                            # Load scans and annotations from some previous dataset version(s) to begin with
-                            # Always include these previous dataset versions when running this script for
-                            # the first time, to make sure all later created splits are subsets.
-DATASET_VERSION     = "v0.2.0" # There can be different train/val/test splits of the dataset
-SPLIT_VERSION       = "v0.2.0_all_splits"
-INPUT_SPLIT_VERSION = "v0.2.0_standard_splits"
-ANNOTATION_VERSION  = "v2.0.0" # optional -- an empty string indicates a dataset without annotations
-DATE_CREATED        = "2021/12/9"
+DATE_CREATED        = "2022/6/13"
 SCAN_LICENSE        = {"url": "https://creativecommons.org/share-your-work/public-domain/pdm/",
                        "name": "Public Domain Mark"}
 DATASET_LICENSE     = {"url": "http://www.apache.org/licenses/",
@@ -131,6 +140,10 @@ for pre_dataset_version, pre_dataset_json_paths in PRE_DATASET_VERSION.items():
     assert os.path.exists(pre_dataset_json_paths[1])
     pre_dataset = json.load(open(pre_dataset_json_paths[0], 'r'))
     assert pre_dataset["categories"] == CATEGORIES
+if PRE_DATASET_VERSION:
+    assert SPLIT_VERSION != INPUT_SPLIT_VERSION
+else:
+    assert SPLIT_VERSION == INPUT_SPLIT_VERSION
 
 # make sure SCAN_LIST_PATH and SPLIT_PATHS exist
 assert os.path.exists(SCAN_LIST_PATH)

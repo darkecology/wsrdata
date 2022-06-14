@@ -51,7 +51,7 @@ generated during the preparation (see the following Release section for more inf
      See the following Original Dataset Preperation section for detailed steps.
     - prepare_dataset_v0.1.0 is based on the above template and generates the dataset in [1] in the COCO format.
     See **prepare_dataset_v0.1.0_help/README.md** for details.
-    - prepare_dataset_v0.2.0 involves three scripts. See the 
+    - preparing dataset_v0.2.B involves three scripts. See the 
     [documentation](https://docs.google.com/document/d/1zX8Sa2hVvjWBhFXQg124XRX1laKY-3aK43dDJLLlD0I/edit?usp=sharing) 
     for details.
         - **organize_screened_csv_as_json.py** organizes scans and annotations from multiple years of a station, 
@@ -89,11 +89,13 @@ generated during the preparation (see the following Release section for more inf
 
 ### Release
 #### datasets
+- v0.0.A are mini-datasets for demo; 
+v0.A.B are development datasets, A is annotation version, B indicates sampling strategies.
 - user_models are for scaling bounding boxes since annotators may differ in style; no user_models is used by default.
 - **roosts_v0.0.1** uses arrays v0.0.1, annotations v1.0.0, and user_models v1.0.0_hardEM200000.
 - **roosts_v0.0.2** uses arrays v0.0.2, annotations v2.0.0, in addition to everything from roosts_v0.0.1.
 - **roosts_v0.1.0** uses arrays v0.1.0, annotations v1.0.0, and user_models v1.0.0_hardEM200000.
-- **roosts_v0.2.0** uses arrays v0.2.0, annotations v2.0.0, in addition to everything from roosts_v0.1.0. See the 
+- **roosts_v0.2.B** uses arrays v0.2.0, annotations v2.0.0, in addition to everything from roosts_v0.1.0. See the 
     [documentation](https://docs.google.com/document/d/1zX8Sa2hVvjWBhFXQg124XRX1laKY-3aK43dDJLLlD0I/edit?usp=sharing) 
     for preparation details.
 
@@ -117,10 +119,10 @@ generated during the preparation (see the following Release section for more inf
         - **val.txt**: 11599 scans
         - **test.txt**: 23587 scans
     - **v0.1.0_KDOX_splits** is a subset of **v0.1.0_standard_splits** with only KDOX scans.
-- **v0.2.0** has scan lists from 12 great lakes stations.
+- **v0.2.B** has scan lists from 12 great lakes stations.
 
 #### arrays
-- **v0.0.1**, **v0.1.0**, **v0.2.0**
+- **v0.0.1**, **v0.1.0**, **v0.2.B**
     - "array": _{reflectivity, velocity, spectrum_width}_ x _elevations{0.5, 1.5, 2.5, 3.5, 4.5}_ x 600 x 600.
     - "dualpol": _{differential_reflectivity, cross_correlation_ratio, differential_phase}_ x 
     _elevations{0.5, 1.5, 2.5, 3.5, 4.5}_ x 600 x 600.
