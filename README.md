@@ -10,26 +10,27 @@ for machine learning;
 
 Official datasets are defined by json files released in this repository. 
 To reproduce these json files and render arrays, please refer to the Dataset Preparation section.
-- **datasets/roosts_v0.0.1_official** defines a mini-dataset to demonstrate the format of roosts_v0.1.0.
-- **datasets/roosts_v0.1.0_official** defines a standardized dataset constructed by [1] to develop machine learning models.
+- **datasets/roosts_v0.0.1_official** defines a toy mini-dataset to demonstrate the format of roosts_v0.1.0.
+- **datasets/roosts_v0.1.0_official** defines a standardized dataset constructed by [1] to 
+develop machine learning models. The data are originally labeled by [3].
 
 The datasets can continue to be upgraded with more radar scans and annotations, for the purpose of 
 ecological analyses and developing machine learning models to recognize biological phenomena in radar data.
 
 ### Dataset Reviewing and Visualization
 - Method 1: Run `tools/visualization.ipynb` to visualize a scan and its annotations. 
-You may download a scan and render an array interactively, if you don't have the array rendered and saved already.
+You may download a scan and render an array interactively, if you have not obtained rendered arrays already.
 - Method 2: Assume we have a list of radar scans, a json file that contains annotations for the scans, and 
-arrays already rendered from downloaded radar scans and saved. 
+arrays already rendered and saved. 
 Run `tools/visualization.py` to generate png images that visualize scans with annotations.
 - A note about **directions**.
-    - By default pywsrlib renders arrays in the geographical direction;
+    - By default pywsrlib renders arrays in the **geographical direction**;
     i.e. when calling `radar2mat`, `ydirection='xy'`.
     In such rendered arrays, y is the first dimension and x the second.
-    Large y indicates North and large x indicates East. 
-    - This wsrdata repo renders arrays with `ydirection='xy'`.
-    To visualize the array channels using matplotlib's `pyplot.imshow`, 
-    we need to set `origin='lower'` in order that North is the top of the image.
+    Large y indicates North (row 0 is South) and large x indicates East. 
+    - This wsrdata repo renders arrays with `ydirection='xy'` in the **geographical direction**.
+    - To visualize the array channels using matplotlib's `pyplot.imshow`, 
+    we need to set `origin='lower'` to get the **image direction** where the top of the image (row 0) is North.
     Before saving images of array channels for UI using matplotlib's `image.imsave`, 
     we need to manually flip the y axis of the arrays and annotations in order that 
     North is the top of the image.
@@ -98,6 +99,9 @@ vim ~/.aws/config
      The scans and annotations in the json are 0-indexed.
     - **prepare_dataset_v0.1.0\*.py** is based on the above template and generates the dataset in [2] in the COCO format.
     See **prepare_dataset_v0.1.0_help/README.md** for details.
+    - **add_lon_lat_to_json.ipynb** is to post-hoc update each annotation dictionary in roosts_{v0.0.1, v0.1.0}.json to 
+    include longitude and latitude information, which didn't existing in our previous construction of the json files, 
+    and have slightly neater key names. This notebook outputs the official roosts_{v0.0.1, v0.1.0}.json.
 
 - **src/wsrdata** implements functions relevant to dataset preparation and analyses:
     - **download_radar_scans.py** downloads radar scans
@@ -127,13 +131,18 @@ generated during the preparation:
 
 ### Dataset Preparation
 - Prepare a dataset
-  - To produce **roosts_v0.0.1**, `cd tools` and run `python prepare_dataset_v0.0.1.py`. 
+  - To produce **roosts_v0.0.1**, `cd dataset_preparation` and run `python prepare_dataset_v0.0.1.py`. 
+  Use `add_lon_lat_to_json.ipynb` to add longitude and latitude information to and slightly update the key names for
+  each bounding box annotation dictionary. 
   The generated `datasets/roosts_v0.0.1/{roosts_v0.0.1.json, roosts_v0.0.1_standard_splits.json}` should be the same as 
   those under `datasets/roosts_v0.0.1_official/` that are provided for reference as part of this repository.
-  - To produce **roosts_v0.1.0** that is a much larger dataset constructed by [1], run `python prepare_dataset_v0.1.0.py`. 
+  - To produce **roosts_v0.1.0** that is a much larger dataset constructed by [1], 
+  run `python prepare_dataset_v0.1.0.py`. 
   `tools/prepare_dataset_v0.1.0_help` contains optional helper functions that are useful for accelerating 
   the dataset creation and checking the correctness of the creation process; 
-  see the README in that directory for details.
+  see the README in that directory for details. 
+  Use `add_lon_lat_to_json.ipynb` to add longitude and latitude information to and slightly update the key names for
+  each bounding box annotation dictionary. 
   - To produce a customized dataset, place customized scan lists, annotations, and possibly user models under
   `static`. Then modify and run `prepare_dataset_v0.1.0.py`.
 
@@ -165,6 +174,7 @@ generated during the preparation:
 - annotations
   - **v1.0.0** is a txt file constructed by [2] and can be downloaded 
   [here](https://www.dropbox.com/s/0j9srf0jt6lc76e/user_annotations.txt?dl=0).
+  The annotatations are originally labeled by [3].
   In the file, y and x are in the range of -150000 to 150000 meters. 
   It uses uses `ydirection='xy'`: large y indicates North; large x indicates East.
   Notice that the second column can end with ".gz" or ".Z". 
@@ -185,10 +195,13 @@ generated during the preparation:
       _elevations{0.5, 1.5, 2.5, 3.5, 4.5}_ x 600 x 600.
 
 ### References
-[1] Using Spatio-Temporal Information in Weather Radar Data to Detect and Track Communal Bird Roosts. 
-Gustavo Perez, Wenlong Zhao, Zezhou Cheng, Maria Carolina T. D. Belotti, Yuting Deng, 
-Victoria F. Simons, Elske Tielens, Jeffrey F. Kelly, 
-Kyle G. Horton, Subhransu Maji, Daniel Sheldon. Preprint.<br />
-[2] [Detecting and Tracking Communal Bird Roosts in Weather Radar Data.](https://people.cs.umass.edu/~zezhoucheng/roosts/radar-roosts-aaai20.pdf)
-Zezhou Cheng, Saadia Gabriel, Pankaj Bhambhani, Daniel Sheldon, Subhransu Maji, Andrew Laughlin and David Winkler.
-AAAI, 2020 (oral presentation, AI for Social Impact Track).
+[1] Perez, Gustavo, Wenlong Zhao, Zezhou Cheng, Maria Belotti, Yuting Deng, Victoria Simons, Elske Tielens, 
+Jeffrey F. Kelly, Kyle G. Horton, Subhransu Maji, Daniel Sheldon. 
+["Using spatio-temporal information in weather radar data to detect and track communal bird roosts."](https://www.biorxiv.org/content/10.1101/2022.10.28.513761v1.abstract) 
+bioRxiv (2022): 2022-10.<br />
+[2] Cheng, Zezhou, Saadia Gabriel, Pankaj Bhambhani, Daniel Sheldon, Subhransu Maji, Andrew Laughlin, and David Winkler. 
+["Detecting and tracking communal bird roosts in weather radar data."](https://people.cs.umass.edu/~zezhoucheng/roosts/radar-roosts-aaai20.pdf) 
+In Proceedings of the AAAI Conference on Artificial Intelligence, vol. 34, no. 01, pp. 378-385. 2020.<br />
+[3] Laughlin, Andrew J., Daniel R. Sheldon, David W. Winkler, and Caz M. Taylor. 
+["Quantifying non‐breeding season occupancy patterns and the timing and drivers of autumn migration for a migratory songbird using Doppler radar."](https://onlinelibrary.wiley.com/doi/abs/10.1111/ecog.01988) 
+Ecography 39, no. 10 (2016): 1017-1024.

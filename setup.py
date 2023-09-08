@@ -5,6 +5,7 @@ from setuptools import find_packages, setup
 
 install_requires = [
     'wsrlib @ git+https://github.com/darkecology/pywsrlib#egg=wsrlib', # commit 3690123 tested
+    "geopy==2.1.0",  # 2.1.0
 ]
 
 setup(
