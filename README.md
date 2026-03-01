@@ -6,7 +6,7 @@ This repository prepares datasets each consisting of:
 (b) **annotations** of biological phenomena; 
 2. json files that store the **splitting** of the radar scan ids into training, validation, and testing sets 
 for machine learning; 
-3. **arrays** rendered from radar products corresponding to the list of scans.
+3. npz files that save **arrays** rendered from radar products corresponding to the list of scans.
 
 Official datasets are defined by json files released in this repository. 
 To reproduce these json files and render arrays, please refer to the Dataset Preparation section.
@@ -24,7 +24,15 @@ You may render an array for a radar scan interactively, if you have not obtained
 arrays that are already rendered and saved. 
 Run `tools/visualization.py` to generate png images that visualize scans with annotations. 
 
-#### A note about rendering and annotation **directions**
+#### Shape and directions
+- Each npz file stores a dictionary for a radar scan, with array and dualpol_array as two keys.
+  - array: a 3x5x600x600 array where the dimensions are 
+    radar fields {reflectivity, velocity, spectrum_width}, 
+    elevation angles {0.5, 1.5, 2.5, 3.5, 4.5} degrees,
+    and 600x600 pixels representing a 300km x 300km region centered at a radar station.
+  - dualpol_array: a 3x5x600x600 array where the radar fields 
+    {differential_reflectivity, cross_correlation_ratio, differential_phase} 
+    are available since around 2008.
 - By default pywsrlib renders arrays in the **geographical direction**;
 i.e. when calling `radar2mat`, `ydirection='xy'`.
 In such rendered arrays, y is the first dimension and x the second.
